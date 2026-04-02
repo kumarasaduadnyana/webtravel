@@ -3,16 +3,20 @@
   "WorkspaceRootPath": "C:\\Works\\Ai\\Mcp\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Works\\Ai\\Mcp\\hotel-widget\\vercel.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:hotel-widget\\vercel.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{38E272C5-851C-4891-B106-06570FFB0342}|TravelAgent\\TravelAgent.csproj|c:\\works\\ai\\mcp\\travelagent\\controllers\\mcpcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{38E272C5-851C-4891-B106-06570FFB0342}|TravelAgent\\TravelAgent.csproj|solutionrelative:travelagent\\controllers\\mcpcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{38E272C5-851C-4891-B106-06570FFB0342}|TravelAgent\\TravelAgent.csproj|c:\\works\\ai\\mcp\\travelagent\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
       "RelativeMoniker": "D:0:0:{38E272C5-851C-4891-B106-06570FFB0342}|TravelAgent\\TravelAgent.csproj|solutionrelative:travelagent\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{38E272C5-851C-4891-B106-06570FFB0342}|TravelAgent\\TravelAgent.csproj|c:\\works\\ai\\mcp\\travelagent\\appsettings.development.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
       "RelativeMoniker": "D:0:0:{38E272C5-851C-4891-B106-06570FFB0342}|TravelAgent\\TravelAgent.csproj|solutionrelative:travelagent\\appsettings.development.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{38E272C5-851C-4891-B106-06570FFB0342}|TravelAgent\\TravelAgent.csproj|c:\\works\\ai\\mcp\\travelagent\\controllers\\mcpcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{38E272C5-851C-4891-B106-06570FFB0342}|TravelAgent\\TravelAgent.csproj|solutionrelative:travelagent\\controllers\\mcpcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{38E272C5-851C-4891-B106-06570FFB0342}|TravelAgent\\TravelAgent.csproj|c:\\works\\ai\\mcp\\travelagent\\services\\hotelservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -139,19 +143,32 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
+              "Title": "vercel.json",
+              "DocumentMoniker": "C:\\Works\\Ai\\Mcp\\hotel-widget\\vercel.json",
+              "RelativeDocumentMoniker": "hotel-widget\\vercel.json",
+              "ToolTip": "C:\\Works\\Ai\\Mcp\\hotel-widget\\vercel.json",
+              "RelativeToolTip": "hotel-widget\\vercel.json",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAcAAAA+AAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-04-02T15:29:53.329Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
               "Title": "appsettings.json",
               "DocumentMoniker": "C:\\Works\\Ai\\Mcp\\TravelAgent\\appsettings.json",
               "RelativeDocumentMoniker": "TravelAgent\\appsettings.json",
               "ToolTip": "C:\\Works\\Ai\\Mcp\\TravelAgent\\appsettings.json",
               "RelativeToolTip": "TravelAgent\\appsettings.json",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAEAAAAOAAAA",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAoAAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
               "WhenOpened": "2026-04-02T14:30:12.318Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 3,
               "Title": "appsettings.Development.json",
               "DocumentMoniker": "C:\\Works\\Ai\\Mcp\\TravelAgent\\appsettings.Development.json",
               "RelativeDocumentMoniker": "TravelAgent\\appsettings.Development.json",
@@ -164,7 +181,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 9,
               "Title": "Hotel.cs",
               "DocumentMoniker": "C:\\Works\\Ai\\Mcp\\TravelAgent\\Models\\Hotel.cs",
               "RelativeDocumentMoniker": "TravelAgent\\Models\\Hotel.cs",
@@ -176,7 +193,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 5,
               "Title": "McpRequest.cs",
               "DocumentMoniker": "C:\\Works\\Ai\\Mcp\\TravelAgent\\Models\\McpRequest.cs",
               "RelativeDocumentMoniker": "TravelAgent\\Models\\McpRequest.cs",
@@ -184,12 +201,11 @@
               "RelativeToolTip": "TravelAgent\\Models\\McpRequest.cs",
               "ViewState": "AQIAAAAAAAAAAAAAAAAAAAgAAAA0AAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-31T16:45:11.687Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-31T16:45:11.687Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 8,
               "Title": "IHotelService.cs",
               "DocumentMoniker": "C:\\Works\\Ai\\Mcp\\TravelAgent\\Services\\IHotelService.cs",
               "RelativeDocumentMoniker": "TravelAgent\\Services\\IHotelService.cs",
@@ -201,20 +217,20 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 4,
               "Title": "HotelService.cs",
               "DocumentMoniker": "C:\\Works\\Ai\\Mcp\\TravelAgent\\Services\\HotelService.cs",
               "RelativeDocumentMoniker": "TravelAgent\\Services\\HotelService.cs",
               "ToolTip": "C:\\Works\\Ai\\Mcp\\TravelAgent\\Services\\HotelService.cs",
               "RelativeToolTip": "TravelAgent\\Services\\HotelService.cs",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAABQAAAAlAAAA",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAABIAAABAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-03-31T16:44:12.231Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 6,
               "Title": "Program.cs",
               "DocumentMoniker": "C:\\Works\\Ai\\Mcp\\TravelAgent\\Program.cs",
               "RelativeDocumentMoniker": "TravelAgent\\Program.cs",
@@ -222,12 +238,11 @@
               "RelativeToolTip": "TravelAgent\\Program.cs",
               "ViewState": "AQIAAAAAAAAAAAAAAAAAABQAAAABAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-31T16:41:32.308Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-31T16:41:32.308Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 7,
               "Title": "launchSettings.json",
               "DocumentMoniker": "C:\\Works\\Ai\\Mcp\\TravelAgent\\Properties\\launchSettings.json",
               "RelativeDocumentMoniker": "TravelAgent\\Properties\\launchSettings.json",
@@ -239,13 +254,13 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 1,
               "Title": "McpController.cs",
               "DocumentMoniker": "C:\\Works\\Ai\\Mcp\\TravelAgent\\Controllers\\McpController.cs",
               "RelativeDocumentMoniker": "TravelAgent\\Controllers\\McpController.cs",
               "ToolTip": "C:\\Works\\Ai\\Mcp\\TravelAgent\\Controllers\\McpController.cs",
               "RelativeToolTip": "TravelAgent\\Controllers\\McpController.cs",
-              "ViewState": "AQIAAHEAAAAAAAAAAAAcwIEAAAA1AAAA",
+              "ViewState": "AQIAAFMAAAAAAAAAAAAcwIEAAAAMAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-03-31T14:16:44.026Z",
               "EditorCaption": ""

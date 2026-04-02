@@ -179,6 +179,10 @@
 <script>
   const { createApp } = Vue;
 
+  // Buffer messages that arrive before Vue mounts
+  const _pendingMessages = [];
+  window.addEventListener('message', (e) => _pendingMessages.push(e));
+
   createApp({
     data() {
       return { hotels: [], location: '' };
@@ -188,11 +192,13 @@
       const injected = window.__mcp_structured_content || window.__mcp_data;
       if (injected?.hotels) { this.load(injected.hotels); return; }
 
-      // 2. postMessage from ChatGPT's iframe
-      window.addEventListener('message', (e) => {
-        const d = e.data?.structuredContent || e.data;
+      // 2. postMessage from ChatGPT's iframe (including buffered ones)
+      const handleMessage = (e) => {
+        const d = e.data?.structuredContent || e.data?.data || e.data;
         if (d?.hotels) this.load(d.hotels);
-      });
+      };
+      _pendingMessages.forEach(handleMessage);
+      window.addEventListener('message', handleMessage);
 
       // 3. ?data=<base64-json> for local testing
       const raw = new URLSearchParams(location.search).get('data');
