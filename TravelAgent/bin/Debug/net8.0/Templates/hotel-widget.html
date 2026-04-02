@@ -136,7 +136,7 @@
           :alt="hotel.name"
           @error="$event.target.style.display='none'"
         />
-        <span v-else>🏨</span>
+        <span v-else>&#x1F3E8;</span>
       </div>
 
       <div class="card-body">
@@ -155,7 +155,7 @@
               v-for="i in 5" :key="i"
               class="star"
               :class="i <= Math.round(hotel.rating) ? 'on' : 'off'"
-            >★</span>
+            >&#x2605;</span>
             <span class="rating-num">{{ hotel.rating }}</span>
           </div>
           <div>
@@ -169,7 +169,7 @@
   </div>
 
   <div class="empty" v-else>
-    <div class="icon">🔍</div>
+    <div class="icon">&#x1F50D;</div>
     <h3>No hotels found</h3>
     <p>Try a different location.</p>
   </div>

@@ -31,3 +31,4 @@ C:\Works\Ai\Mcp\TravelAgent\obj\Debug\net8.0\TravelAgent.pdb
 C:\Works\Ai\Mcp\TravelAgent\obj\Debug\net8.0\TravelAgent.genruntimeconfig.cache
 C:\Works\Ai\Mcp\TravelAgent\obj\Debug\net8.0\ref\TravelAgent.dll
 C:\Works\Ai\Mcp\TravelAgent\obj\Debug\net8.0\TravelAgent.sourcelink.json
+C:\Works\Ai\Mcp\TravelAgent\bin\Debug\net8.0\Templates\hotel-widget.html

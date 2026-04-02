@@ -31,6 +31,8 @@ namespace TravelAgent.Controllers
                 "initialize" => HandleInitialize(request),
                 "tools/list" => HandleToolsList(request),
                 "tools/call" => await HandleToolsCall(request),
+                "resources/list" => HandleResourcesList(request),
+                "resources/read" => HandleResourcesRead(request),
                 _ => Ok(JsonRpcError(request.Id, -32601, $"Method not found: {request.Method}"))
             };
         }
@@ -44,7 +46,7 @@ namespace TravelAgent.Controllers
                 result = new
                 {
                     protocolVersion = "2024-11-05",
-                    capabilities = new { tools = new { } },
+                    capabilities = new { tools = new { }, resources = new { } },
                     serverInfo = new { name = "hotel-search-mcp", version = "1.0.0" }
                 }
             });
@@ -127,7 +129,7 @@ namespace TravelAgent.Controllers
                 image_url = h.ImageUrl
             }).ToList();
 
-            var widgetUrl = _configuration["WidgetUrl"] ?? "";
+            const string widgetResourceUri = "ui://hotel-widget";
 
             return Ok(new
             {
@@ -143,13 +145,78 @@ namespace TravelAgent.Controllers
                             text = $"Found {hotelResults.Count} hotel(s) in {location}."
                         }
                     },
-                    structuredContent = new { hotels = hotelResults },
+                    structuredContent = new
+                    {
+                        hotels = hotelResults
+                    },
                     _meta = new Dictionary<string, object>
                     {
-                        ["openai/outputTemplate"] = widgetUrl
+                        ["openai/outputTemplate"] = widgetResourceUri
                     }
                 }
             });
+        }
+
+        private IActionResult HandleResourcesList(McpRequest request)
+        {
+            return Ok(new
+            {
+                jsonrpc = "2.0",
+                id = request.Id,
+                result = new
+                {
+                    resources = new[]
+                    {
+                        new
+                        {
+                            uri = "ui://hotel-widget",
+                            name = "Hotel Search Widget",
+                            mimeType = "text/html;profile=mcp-app",
+                            description = "Interactive hotel search results widget"
+                        }
+                    }
+                }
+            });
+        }
+
+        private IActionResult HandleResourcesRead(McpRequest request)
+        {
+            var uri = "";
+            if (request.Params.HasValue)
+            {
+                var root = request.Params.Value;
+                if (root.TryGetProperty("uri", out var uriElement))
+                    uri = uriElement.GetString() ?? "";
+            }
+
+            if (uri != "ui://hotel-widget")
+                return Ok(JsonRpcError(request.Id, -32002, $"Resource not found: {uri}"));
+
+            var html = GetWidgetHtml();
+
+            return Ok(new
+            {
+                jsonrpc = "2.0",
+                id = request.Id,
+                result = new
+                {
+                    contents = new[]
+                    {
+                        new
+                        {
+                            uri = "ui://hotel-widget",
+                            mimeType = "text/html;profile=mcp-app",
+                            text = html
+                        }
+                    }
+                }
+            });
+        }
+
+        private static string GetWidgetHtml()
+        {
+            var path = Path.Combine(AppContext.BaseDirectory, "Templates", "hotel-widget.html");
+            return System.IO.File.ReadAllText(path);
         }
 
         private static object JsonRpcError(object? id, int code, string message) => new
