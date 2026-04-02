@@ -129,7 +129,13 @@ namespace TravelAgent.Controllers
                 image_url = h.ImageUrl
             }).ToList();
 
-            const string widgetResourceUri = "ui://hotel-widget";
+            var widgetUrl = _configuration["WidgetUrl"] ?? "";
+            var dataJson = System.Text.Json.JsonSerializer.Serialize(new { hotels = hotelResults });
+            var dataBase64 = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(dataJson));
+            var widgetLink = $"{widgetUrl.TrimEnd('/')}/?data={dataBase64}";
+
+            var markdownTable = BuildMarkdownTable(hotelResults.Select(h => new HotelRow(h.name, h.location, h.rating, h.price)).ToList());
+            var responseText = $"## Hotels in {location}\n\n{markdownTable}\n\n[View full hotel cards]({widgetLink})";
 
             return Ok(new
             {
@@ -139,22 +145,27 @@ namespace TravelAgent.Controllers
                 {
                     content = new[]
                     {
-                        new
-                        {
-                            type = "text",
-                            text = $"Found {hotelResults.Count} hotel(s) in {location}."
-                        }
+                        new { type = "text", text = responseText }
                     },
-                    structuredContent = new
-                    {
-                        hotels = hotelResults
-                    },
-                    _meta = new Dictionary<string, object>
-                    {
-                        ["openai/outputTemplate"] = widgetResourceUri
-                    }
+                    structuredContent = new { hotels = hotelResults }
                 }
             });
+        }
+
+        private record HotelRow(string name, string location, double? rating, int price);
+
+        private static string BuildMarkdownTable(List<HotelRow> hotels)
+        {
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine("| Hotel | Location | Rating | Price/Night |");
+            sb.AppendLine("|-------|----------|--------|-------------|");
+            foreach (var h in hotels)
+            {
+                var rounded = (int)Math.Round(h.rating ?? 0);
+                var stars = new string('★', rounded) + new string('☆', 5 - rounded);
+                sb.AppendLine($"| {h.name} | {h.location} | {stars} {h.rating} | ${h.price} |");
+            }
+            return sb.ToString();
         }
 
         private IActionResult HandleResourcesList(McpRequest request)
