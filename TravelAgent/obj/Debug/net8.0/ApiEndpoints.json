@@ -1,0 +1,18 @@
+[
+  {
+    "ContainingType": "TravelAgent.Controllers.McpController",
+    "Method": "Handle",
+    "RelativePath": "mcp",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "TravelAgent.Models.McpRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  }
+]

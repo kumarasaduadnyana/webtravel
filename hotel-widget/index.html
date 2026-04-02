@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hotel Results</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f7f8fa;
+      padding: 16px;
+      color: #1a202c;
+    }
+
+    #app { max-width: 960px; margin: 0 auto; }
+
+    /* Header */
+    .header { margin-bottom: 18px; }
+    .header h2 { font-size: 1.3rem; font-weight: 700; color: #2d3748; }
+    .header p  { font-size: 0.85rem; color: #718096; margin-top: 3px; }
+
+    /* Grid */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 16px;
+    }
+
+    /* Card */
+    .card {
+      background: #fff;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.07), 0 4px 14px rgba(0,0,0,0.05);
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.11);
+    }
+
+    /* Image */
+    .card-img {
+      height: 155px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.8rem;
+      overflow: hidden;
+    }
+    .card-img img {
+      width: 100%; height: 100%; object-fit: cover;
+    }
+
+    /* Body */
+    .card-body { padding: 13px 15px; }
+
+    .card-name {
+      font-size: 0.97rem;
+      font-weight: 700;
+      color: #2d3748;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .card-location {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.8rem;
+      color: #718096;
+      margin: 5px 0 12px;
+    }
+
+    /* Footer */
+    .card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 10px;
+      border-top: 1px solid #edf2f7;
+    }
+
+    .stars { display: flex; align-items: center; gap: 1px; }
+    .star { font-size: 0.85rem; }
+    .star.on  { color: #f6ad55; }
+    .star.off { color: #e2e8f0; }
+    .rating-num {
+      margin-left: 5px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #4a5568;
+    }
+
+    .price-amount {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #2d3748;
+    }
+    .price-label {
+      font-size: 0.7rem;
+      color: #a0aec0;
+      margin-left: 2px;
+    }
+
+    /* Empty state */
+    .empty {
+      text-align: center;
+      padding: 52px 24px;
+      color: #718096;
+    }
+    .empty .icon { font-size: 3rem; margin-bottom: 12px; }
+    .empty h3 { font-size: 1.05rem; font-weight: 600; color: #4a5568; margin-bottom: 6px; }
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <div class="header" v-if="hotels.length">
+    <h2>Hotels in {{ location }}</h2>
+    <p>{{ hotels.length }} option{{ hotels.length !== 1 ? 's' : '' }} available</p>
+  </div>
+
+  <div class="grid" v-if="hotels.length">
+    <div class="card" v-for="hotel in hotels" :key="hotel.id">
+
+      <div class="card-img">
+        <img
+          v-if="isRealImage(hotel.image_url)"
+          :src="hotel.image_url"
+          :alt="hotel.name"
+          @error="$event.target.style.display='none'"
+        />
+        <span v-else>🏨</span>
+      </div>
+
+      <div class="card-body">
+        <div class="card-name" :title="hotel.name">{{ hotel.name }}</div>
+        <div class="card-location">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2.5">
+            <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/>
+            <circle cx="12" cy="10" r="3"/>
+          </svg>
+          {{ hotel.location }}
+        </div>
+        <div class="card-footer">
+          <div class="stars">
+            <span
+              v-for="i in 5" :key="i"
+              class="star"
+              :class="i <= Math.round(hotel.rating) ? 'on' : 'off'"
+            >★</span>
+            <span class="rating-num">{{ hotel.rating }}</span>
+          </div>
+          <div>
+            <span class="price-amount">${{ hotel.price }}</span>
+            <span class="price-label">/night</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="empty" v-else>
+    <div class="icon">🔍</div>
+    <h3>No hotels found</h3>
+    <p>Try a different location.</p>
+  </div>
+
+</div>
+
+<script>
+  const { createApp } = Vue;
+
+  createApp({
+    data() {
+      return { hotels: [], location: '' };
+    },
+    mounted() {
+      // 1. OpenAI structured content injection
+      const injected = window.__mcp_structured_content || window.__mcp_data;
+      if (injected?.hotels) { this.load(injected.hotels); return; }
+
+      // 2. postMessage from ChatGPT's iframe
+      window.addEventListener('message', (e) => {
+        const d = e.data?.structuredContent || e.data;
+        if (d?.hotels) this.load(d.hotels);
+      });
+
+      // 3. ?data=<base64-json> for local testing
+      const raw = new URLSearchParams(location.search).get('data');
+      if (raw) {
+        try { const p = JSON.parse(atob(raw)); if (p?.hotels) this.load(p.hotels); }
+        catch (_) {}
+      }
+    },
+    methods: {
+      load(hotels) {
+        this.hotels = hotels;
+        this.location = hotels[0]?.location ?? '';
+      },
+      isRealImage(url) {
+        return url && !url.includes('example.com');
+      }
+    }
+  }).mount('#app');
+</script>
+</body>
+</html>
