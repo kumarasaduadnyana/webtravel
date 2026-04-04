@@ -9,7 +9,7 @@
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      background: #f2f6fa;
+      background: transparent;
       color: #1a1a1a;
       font-size: 14px;
       padding: 16px;
@@ -369,7 +369,17 @@
 
   // Boot
   if (!checkOpenAiGlobals()) {
+    // Listen for the event in case data arrives after this script runs
     window.addEventListener('openai:set-globals', function () { checkOpenAiGlobals(); });
+
+    // Fallback poll: covers the race where the event fired before our listener was added
+    var attempts = 0;
+    var poll = setInterval(function () {
+      if (checkOpenAiGlobals() || ++attempts >= 50) {
+        clearInterval(poll);
+      }
+    }, 200); // check every 200 ms, up to 10 s
+
     renderSpinner();
   }
 })();
