@@ -8,260 +8,370 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: #f0f4f8;
-      padding: 20px;
-      color: #1a202c;
-      min-height: 100vh;
-    }
-
-    .header {
-      margin-bottom: 20px;
-    }
-    .header h2 {
-      font-size: 1.4rem;
-      font-weight: 700;
-      color: #1a202c;
-    }
-    .header p {
-      font-size: 0.85rem;
-      color: #718096;
-      margin-top: 4px;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-      gap: 18px;
-    }
-
-    .card {
-      background: #fff;
-      border-radius: 16px;
-      overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-      transition: transform 0.18s ease, box-shadow 0.18s ease;
-    }
-    .card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-    }
-
-    .card-thumb {
-      height: 160px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 3rem;
-      position: relative;
-      overflow: hidden;
-    }
-    .card-thumb img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      position: absolute;
-      inset: 0;
-    }
-
-    .card-body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: #f2f6fa;
+      color: #1a1a1a;
+      font-size: 14px;
       padding: 16px;
     }
 
-    .card-name {
-      font-size: 1rem;
-      font-weight: 700;
-      color: #1a202c;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      margin-bottom: 6px;
-    }
-
-    .card-location {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      font-size: 0.8rem;
-      color: #718096;
+    /* ── Header ─────────────────────────────────────────────────── */
+    .page-header {
+      background: #003580;
+      color: #fff;
+      border-radius: 10px;
+      padding: 14px 18px;
       margin-bottom: 14px;
-    }
-    .card-location svg { flex-shrink: 0; }
-
-    .card-footer {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding-top: 12px;
-      border-top: 1px solid #edf2f7;
+    }
+    .page-header h2 {
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+    .page-header .count {
+      font-size: 0.82rem;
+      opacity: 0.85;
+      background: rgba(255,255,255,0.18);
+      border-radius: 20px;
+      padding: 3px 10px;
     }
 
-    .stars {
+    /* ── Card ────────────────────────────────────────────────────── */
+    .card {
+      background: #fff;
+      border: 1px solid #e7e7e7;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 12px;
+      display: flex;
+      transition: box-shadow 0.15s;
+    }
+    .card:hover { box-shadow: 0 4px 18px rgba(0,53,128,0.13); }
+
+    /* ── Image ───────────────────────────────────────────────────── */
+    .card-img {
+      width: 200px;
+      min-width: 200px;
+      height: 160px;
+      background: linear-gradient(135deg, #003580 0%, #009fe3 100%);
       display: flex;
       align-items: center;
-      gap: 2px;
+      justify-content: center;
+      font-size: 3.2rem;
+      position: relative;
+      overflow: hidden;
     }
-    .star {
-      font-size: 0.9rem;
-      line-height: 1;
+    .card-img img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
-    .star-on  { color: #f6ad55; }
-    .star-off { color: #e2e8f0; }
-    .rating-val {
-      margin-left: 5px;
-      font-size: 0.8rem;
+
+    /* ── Content ─────────────────────────────────────────────────── */
+    .card-content {
+      flex: 1;
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .hotel-name {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #003580;
+      line-height: 1.3;
+    }
+
+    /* Score badge: blue rounded square */
+    .score-badge {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .score-box {
+      background: #003580;
+      color: #fff;
+      font-size: 0.95rem;
+      font-weight: 700;
+      border-radius: 6px 6px 6px 0;
+      padding: 4px 8px;
+      min-width: 38px;
+      text-align: center;
+    }
+    .score-label {
+      font-size: 0.7rem;
+      color: #595959;
+      margin-top: 2px;
+      white-space: nowrap;
+    }
+
+    .star-row {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .star { font-size: 0.8rem; color: #feba02; }
+
+    .location {
+      font-size: 0.78rem;
+      color: #595959;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 2px;
+    }
+    .badge-cancel {
+      font-size: 0.74rem;
+      color: #008009;
       font-weight: 600;
-      color: #4a5568;
     }
-
-    .price {
-      text-align: right;
-    }
-    .price-amount {
-      font-size: 1.1rem;
-      font-weight: 800;
-      color: #2d3748;
-    }
-    .price-unit {
+    .badge-genius {
       font-size: 0.72rem;
-      color: #a0aec0;
-      display: block;
-      margin-top: -2px;
+      background: #003580;
+      color: #feba02;
+      border-radius: 3px;
+      padding: 1px 6px;
+      font-weight: 700;
     }
 
-    /* Empty / loading states */
-    .state-center {
+    .card-bottom {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-top: auto;
+      padding-top: 8px;
+      border-top: 1px solid #f0f0f0;
+    }
+
+    .price-block {}
+    .price-note { font-size: 0.72rem; color: #595959; }
+    .price-amount {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: #1a1a1a;
+      line-height: 1.1;
+    }
+    .price-per { font-size: 0.72rem; color: #595959; }
+    .price-tax  { font-size: 0.7rem; color: #008009; }
+
+    .btn-availability {
+      background: #0071c2;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 9px 16px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.15s;
+    }
+    .btn-availability:hover { background: #005999; }
+
+    /* ── Loading / Empty ─────────────────────────────────────────── */
+    .state {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      min-height: 240px;
+      min-height: 260px;
       text-align: center;
-      color: #718096;
-      gap: 12px;
+      gap: 14px;
     }
-    .state-icon { font-size: 3rem; }
-    .state-title { font-size: 1.05rem; font-weight: 600; color: #4a5568; }
-    .state-sub   { font-size: 0.85rem; }
+    .state-icon  { font-size: 3rem; }
+    .state-title { font-size: 1rem; font-weight: 600; color: #003580; }
+    .state-sub   { font-size: 0.85rem; color: #595959; }
 
     .spinner {
       width: 36px; height: 36px;
-      border: 3px solid #e2e8f0;
-      border-top-color: #667eea;
+      border: 3px solid #d4e2f7;
+      border-top-color: #003580;
       border-radius: 50%;
       animation: spin 0.7s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Responsive ──────────────────────────────────────────────── */
+    @media (max-width: 500px) {
+      .card { flex-direction: column; }
+      .card-img { width: 100%; min-width: unset; height: 140px; }
+      .card-top { flex-direction: column; }
+    }
   </style>
 </head>
 <body>
-
 <div id="root"></div>
 
 <script>
 (function () {
-  var state = { status: 'waiting', hotels: [], location: '' };
+  'use strict';
 
-  // --- Render ---
-  function render() {
-    var root = document.getElementById('root');
+  var root = document.getElementById('root');
 
-    if (state.status === 'loading') {
-      root.innerHTML = '<div class="state-center"><div class="spinner"></div><p class="state-sub">Loading hotels&hellip;</p></div>';
-      return;
+  // ── Helpers ───────────────────────────────────────────────────────────────
+
+  function esc(s) {
+    return String(s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function scoreLabel(r) {
+    if (!r) return '';
+    var n = parseFloat(r) * 2; // our rating is /5, booking is /10
+    if (n >= 9)   return 'Exceptional';
+    if (n >= 8)   return 'Very Good';
+    if (n >= 7)   return 'Good';
+    if (n >= 6)   return 'Pleasant';
+    return 'Review score';
+  }
+
+  function scoreDisplay(r) {
+    if (!r) return '';
+    return (parseFloat(r) * 2).toFixed(1);
+  }
+
+  function stars(r) {
+    var n = Math.round(r || 0);
+    var s = '';
+    for (var i = 0; i < 5; i++) {
+      s += '<span class="star" style="color:' + (i < n ? '#feba02' : '#d4d4d4') + '">&#9733;</span>';
     }
+    return s;
+  }
 
-    if (state.status === 'waiting' || state.hotels.length === 0) {
-      root.innerHTML = '<div class="state-center"><div class="state-icon">&#x1F50D;</div><p class="state-title">No hotels found</p><p class="state-sub">Try a different location.</p></div>';
-      return;
-    }
+  // ── Render ────────────────────────────────────────────────────────────────
 
-    var cards = state.hotels.map(function (h) {
-      var rating = h.rating || 0;
-      var rounded = Math.round(rating);
-      var stars = '';
-      for (var i = 1; i <= 5; i++) {
-        stars += '<span class="star ' + (i <= rounded ? 'star-on' : 'star-off') + '">&#x2605;</span>';
-      }
+  function renderSpinner() {
+    root.innerHTML = '<div class="state"><div class="spinner"></div>'
+      + '<p class="state-sub">Searching for the best hotels\u2026</p></div>';
+  }
 
+  function renderEmpty() {
+    root.innerHTML = '<div class="state">'
+      + '<div class="state-icon">&#x1F50D;</div>'
+      + '<p class="state-title">No hotels found</p>'
+      + '<p class="state-sub">Try searching a different location.</p></div>';
+  }
+
+  function renderHotels(hotels) {
+    if (!hotels || hotels.length === 0) { renderEmpty(); return; }
+
+    var location = hotels[0].location || '';
+
+    var cards = hotels.map(function (h) {
       var thumb = (h.image_url && h.image_url.indexOf('example.com') === -1)
-        ? '<img src="' + escHtml(h.image_url) + '" alt="' + escHtml(h.name) + '" onerror="this.style.display=\'none\'">'
+        ? '<img src="' + esc(h.image_url) + '" alt="' + esc(h.name) + '" onerror="this.remove()">'
         : '&#x1F3E8;';
 
+      var score = h.rating ? (
+        '<div class="score-badge">'
+        + '<div class="score-box">' + esc(scoreDisplay(h.rating)) + '</div>'
+        + '<div class="score-label">' + esc(scoreLabel(h.rating)) + '</div>'
+        + '</div>'
+      ) : '';
+
       return '<div class="card">'
-        + '  <div class="card-thumb">' + thumb + '</div>'
-        + '  <div class="card-body">'
-        + '    <div class="card-name" title="' + escHtml(h.name) + '">' + escHtml(h.name) + '</div>'
-        + '    <div class="card-location">'
-        + '      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">'
-        + '        <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>'
-        + '      </svg>'
-        + escHtml(h.location)
-        + '    </div>'
-        + '    <div class="card-footer">'
-        + '      <div class="stars">' + stars + '<span class="rating-val">' + rating + '</span></div>'
-        + '      <div class="price"><span class="price-amount">$' + escHtml(String(h.price)) + '</span><span class="price-unit">per night</span></div>'
-        + '    </div>'
-        + '  </div>'
-        + '</div>';
+        + '<div class="card-img">' + thumb + '</div>'
+        + '<div class="card-content">'
+
+        + '<div class="card-top">'
+        + '<div>'
+        + '<div class="hotel-name">' + esc(h.name) + '</div>'
+        + '<div class="star-row" style="margin:4px 0">' + stars(h.rating) + '</div>'
+        + '<div class="location">'
+        + '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#595959" stroke-width="2.5">'
+        + '<path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>'
+        + '</svg>'
+        + esc(h.location)
+        + '</div>'
+        + '</div>'
+        + score
+        + '</div>'
+
+        + '<div class="badges">'
+        + '<span class="badge-cancel">&#10003; Free cancellation</span>'
+        + (h.rating && parseFloat(h.rating) >= 4 ? '<span class="badge-genius">Genius</span>' : '')
+        + '</div>'
+
+        + '<div class="card-bottom">'
+        + '<div class="price-block">'
+        + '<div class="price-note">Starting from</div>'
+        + '<div>'
+        + '<span class="price-amount">$' + esc(String(h.price)) + '</span>'
+        + '<span class="price-per"> /night</span>'
+        + '</div>'
+        + '<div class="price-tax">Includes taxes &amp; fees</div>'
+        + '</div>'
+        + '<button class="btn-availability">See availability &rsaquo;</button>'
+        + '</div>'
+
+        + '</div></div>';
     }).join('');
 
-    root.innerHTML = '<div class="header"><h2>Hotels in ' + escHtml(state.location) + '</h2>'
-      + '<p>' + state.hotels.length + ' option' + (state.hotels.length !== 1 ? 's' : '') + ' available</p></div>'
-      + '<div class="grid">' + cards + '</div>';
+    root.innerHTML = '<div class="page-header">'
+      + '<h2>&#x1F3E8; Hotels in ' + esc(location) + '</h2>'
+      + '<span class="count">' + hotels.length + ' propert' + (hotels.length !== 1 ? 'ies' : 'y') + '</span>'
+      + '</div>'
+      + cards;
   }
 
-  function escHtml(str) {
-    return String(str)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
+  // ── Data sources ──────────────────────────────────────────────────────────
+
+  function tryLoad(data) {
+    if (!data) return false;
+    var hotels = data.hotels || (Array.isArray(data) ? data : null);
+    if (hotels) { renderHotels(hotels); return true; }
+    return false;
   }
 
-  function loadHotels(hotels) {
-    state.hotels = hotels || [];
-    state.location = (hotels && hotels[0] && hotels[0].location) ? hotels[0].location : '';
-    state.status = 'ready';
-    render();
+  // 1. window.openai.toolOutput — ChatGPT Apps SDK (primary)
+  function checkOpenAiGlobals() {
+    return tryLoad(window.openai && window.openai.toolOutput);
   }
 
-  // --- Data sources ---
-
-  // 1. ChatGPT Apps SDK: ui/notifications/tool-result (JSON-RPC 2.0 over postMessage)
+  // 2. postMessage — ui/notifications/tool-result
   window.addEventListener('message', function (e) {
     var d = e.data;
     if (!d) return;
-
-    // Official format: { jsonrpc, method: "ui/notifications/tool-result", params: { structuredContent } }
     if (d.method === 'ui/notifications/tool-result') {
-      var sc = d.params && d.params.structuredContent;
-      if (sc && sc.hotels) { loadHotels(sc.hotels); return; }
+      if (tryLoad(d.params && d.params.structuredContent)) return;
     }
-
-    // Fallback: plain structuredContent / data envelope
-    var sc2 = d.structuredContent || d.data || d;
-    if (sc2 && sc2.hotels) loadHotels(sc2.hotels);
+    tryLoad(d.structuredContent || d.data || (d.hotels ? d : null));
   });
 
-  // 2. window.__mcp_structured_content injection
-  var injected = window.__mcp_structured_content || window.__mcp_data;
-  if (injected && injected.hotels) {
-    loadHotels(injected.hotels);
-  }
-
-  // 3. ?data=<base64-json> for direct Vercel testing
-  var raw = new URLSearchParams(location.search).get('data');
-  if (raw) {
+  // 3. ?data=<base64> — Vercel preview link
+  (function () {
     try {
-      var parsed = JSON.parse(atob(raw));
-      if (parsed && parsed.hotels) loadHotels(parsed.hotels);
+      var raw = new URLSearchParams(location.search).get('data');
+      if (raw) tryLoad(JSON.parse(atob(raw)));
     } catch (_) {}
-  }
+  })();
 
-  // Initial render (waiting state)
-  render();
+  // Boot
+  if (!checkOpenAiGlobals()) {
+    window.addEventListener('openai:set-globals', function () { checkOpenAiGlobals(); });
+    renderSpinner();
+  }
 })();
 </script>
 </body>
