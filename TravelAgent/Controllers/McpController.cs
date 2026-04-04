@@ -9,9 +9,8 @@ namespace TravelAgent.Controllers
     [Route("mcp")]
     public class McpController : ControllerBase
     {
-        // Vercel-hosted widget URL — ChatGPT loads this as a sandboxed iframe.
-        // Using a real HTTPS URL avoids ChatGPT's page-level CSP blocking inline scripts.
-        private string WidgetUri => _configuration["WidgetUrl"]?.TrimEnd('/') ?? "https://webtravel-olive.vercel.app";
+        // ui:// URI — ChatGPT fetches HTML via resources/read and renders it in an iframe.
+        private const string WidgetUri = "ui://widget/hotel-widget.html";
 
         private readonly ILogger<McpController> _logger;
         private readonly IHotelService _hotelService;
@@ -189,25 +188,44 @@ namespace TravelAgent.Controllers
 
             var hotels = await _hotelService.SearchHotel(destination, checkIn, checkOut, adults, rooms, currency);
 
-            // Fetch thumbnail images as base64 data URIs — the only way to pass
-            // ChatGPT's iframe CSP which only allows img-src 'self' and data:
+            // Fetch images as base64 data URIs — required because ChatGPT's iframe
+            // CSP only allows img-src 'self' data:, blocking external CDN URLs.
             var httpClient = _httpClientFactory.CreateClient("ImageProxy");
-            var hotelResults = await Task.WhenAll(hotels.Take(15).Select(async h =>
+            var hotelResults = await Task.WhenAll(hotels.Take(10).Select(async h =>
             {
                 string imageDataUri = "";
                 var rawUrl = h.ImageUrl;
                 if (!string.IsNullOrEmpty(rawUrl))
                 {
-                    try
+                    // Candidate URLs: _b (medium) then fall back to original (_z)
+                    var thumbUrl = System.Text.RegularExpressions.Regex.Replace(
+                        rawUrl, @"_[a-z](\.[a-z]+)$", "_b$1");
+                    var candidates = thumbUrl != rawUrl
+                        ? new[] { thumbUrl, rawUrl }
+                        : new[] { rawUrl };
+
+                    foreach (var url in candidates)
                     {
-                        // Use _b (medium ~350px) thumbnail instead of _z (very large)
-                        var thumbUrl = System.Text.RegularExpressions.Regex.Replace(
-                            rawUrl, @"_[a-z]\.jpg$", "_b.jpg");
-                        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-                        var bytes = await httpClient.GetByteArrayAsync(thumbUrl, cts.Token);
-                        imageDataUri = $"data:image/jpeg;base64,{Convert.ToBase64String(bytes)}";
+                        try
+                        {
+                            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(8));
+                            var response = await httpClient.GetAsync(url, cts.Token);
+                            if (!response.IsSuccessStatusCode)
+                            {
+                                _logger.LogWarning("Image fetch {Status} for {Url}", (int)response.StatusCode, url);
+                                continue;
+                            }
+                            var bytes = await response.Content.ReadAsByteArrayAsync();
+                            var mime  = response.Content.Headers.ContentType?.MediaType ?? "image/jpeg";
+                            imageDataUri = $"data:{mime};base64,{Convert.ToBase64String(bytes)}";
+                            _logger.LogInformation("Image fetched {Bytes}b from {Url}", bytes.Length, url);
+                            break;
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogWarning("Image fetch failed for {Url}: {Msg}", url, ex.Message);
+                        }
                     }
-                    catch { /* leave empty — card shows placeholder */ }
                 }
 
                 return new
