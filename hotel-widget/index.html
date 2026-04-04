@@ -4,68 +4,79 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Hotel Results</title>
-  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: #f7f8fa;
-      padding: 16px;
+      background: #f0f4f8;
+      padding: 20px;
+      color: #1a202c;
+      min-height: 100vh;
+    }
+
+    .header {
+      margin-bottom: 20px;
+    }
+    .header h2 {
+      font-size: 1.4rem;
+      font-weight: 700;
       color: #1a202c;
     }
-
-    #app { max-width: 960px; margin: 0 auto; }
-
-    /* Header */
-    .header { margin-bottom: 18px; }
-    .header h2 { font-size: 1.3rem; font-weight: 700; color: #2d3748; }
-    .header p  { font-size: 0.85rem; color: #718096; margin-top: 3px; }
-
-    /* Grid */
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-      gap: 16px;
+    .header p {
+      font-size: 0.85rem;
+      color: #718096;
+      margin-top: 4px;
     }
 
-    /* Card */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 18px;
+    }
+
     .card {
       background: #fff;
-      border-radius: 14px;
+      border-radius: 16px;
       overflow: hidden;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.07), 0 4px 14px rgba(0,0,0,0.05);
-      transition: transform 0.15s, box-shadow 0.15s;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      transition: transform 0.18s ease, box-shadow 0.18s ease;
     }
     .card:hover {
       transform: translateY(-4px);
-      box-shadow: 0 6px 20px rgba(0,0,0,0.11);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
     }
 
-    /* Image */
-    .card-img {
-      height: 155px;
-      background: linear-gradient(135deg, #667eea, #764ba2);
+    .card-thumb {
+      height: 160px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 2.8rem;
+      font-size: 3rem;
+      position: relative;
       overflow: hidden;
     }
-    .card-img img {
-      width: 100%; height: 100%; object-fit: cover;
+    .card-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      position: absolute;
+      inset: 0;
     }
 
-    /* Body */
-    .card-body { padding: 13px 15px; }
+    .card-body {
+      padding: 16px;
+    }
 
     .card-name {
-      font-size: 0.97rem;
+      font-size: 1rem;
       font-weight: 700;
-      color: #2d3748;
+      color: #1a202c;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      margin-bottom: 6px;
     }
 
     .card-location {
@@ -74,155 +85,184 @@
       gap: 4px;
       font-size: 0.8rem;
       color: #718096;
-      margin: 5px 0 12px;
+      margin-bottom: 14px;
     }
+    .card-location svg { flex-shrink: 0; }
 
-    /* Footer */
     .card-footer {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding-top: 10px;
+      padding-top: 12px;
       border-top: 1px solid #edf2f7;
     }
 
-    .stars { display: flex; align-items: center; gap: 1px; }
-    .star { font-size: 0.85rem; }
-    .star.on  { color: #f6ad55; }
-    .star.off { color: #e2e8f0; }
-    .rating-num {
+    .stars {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+    .star {
+      font-size: 0.9rem;
+      line-height: 1;
+    }
+    .star-on  { color: #f6ad55; }
+    .star-off { color: #e2e8f0; }
+    .rating-val {
       margin-left: 5px;
       font-size: 0.8rem;
       font-weight: 600;
       color: #4a5568;
     }
 
+    .price {
+      text-align: right;
+    }
     .price-amount {
-      font-size: 1.05rem;
+      font-size: 1.1rem;
       font-weight: 800;
       color: #2d3748;
     }
-    .price-label {
-      font-size: 0.7rem;
+    .price-unit {
+      font-size: 0.72rem;
       color: #a0aec0;
-      margin-left: 2px;
+      display: block;
+      margin-top: -2px;
     }
 
-    /* Empty state */
-    .empty {
+    /* Empty / loading states */
+    .state-center {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 240px;
       text-align: center;
-      padding: 52px 24px;
       color: #718096;
+      gap: 12px;
     }
-    .empty .icon { font-size: 3rem; margin-bottom: 12px; }
-    .empty h3 { font-size: 1.05rem; font-weight: 600; color: #4a5568; margin-bottom: 6px; }
+    .state-icon { font-size: 3rem; }
+    .state-title { font-size: 1.05rem; font-weight: 600; color: #4a5568; }
+    .state-sub   { font-size: 0.85rem; }
+
+    .spinner {
+      width: 36px; height: 36px;
+      border: 3px solid #e2e8f0;
+      border-top-color: #667eea;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
-<div id="app">
 
-  <div class="header" v-if="hotels.length">
-    <h2>Hotels in {{ location }}</h2>
-    <p>{{ hotels.length }} option{{ hotels.length !== 1 ? 's' : '' }} available</p>
-  </div>
-
-  <div class="grid" v-if="hotels.length">
-    <div class="card" v-for="hotel in hotels" :key="hotel.id">
-
-      <div class="card-img">
-        <img
-          v-if="isRealImage(hotel.image_url)"
-          :src="hotel.image_url"
-          :alt="hotel.name"
-          @error="$event.target.style.display='none'"
-        />
-        <span v-else>🏨</span>
-      </div>
-
-      <div class="card-body">
-        <div class="card-name" :title="hotel.name">{{ hotel.name }}</div>
-        <div class="card-location">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="2.5">
-            <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/>
-            <circle cx="12" cy="10" r="3"/>
-          </svg>
-          {{ hotel.location }}
-        </div>
-        <div class="card-footer">
-          <div class="stars">
-            <span
-              v-for="i in 5" :key="i"
-              class="star"
-              :class="i <= Math.round(hotel.rating) ? 'on' : 'off'"
-            >★</span>
-            <span class="rating-num">{{ hotel.rating }}</span>
-          </div>
-          <div>
-            <span class="price-amount">${{ hotel.price }}</span>
-            <span class="price-label">/night</span>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <div class="empty" v-else>
-    <div class="icon">🔍</div>
-    <h3>No hotels found</h3>
-    <p>Try a different location.</p>
-  </div>
-
-</div>
+<div id="root"></div>
 
 <script>
-  const { createApp } = Vue;
+(function () {
+  var state = { status: 'waiting', hotels: [], location: '' };
 
-  // Buffer messages that arrive before Vue mounts
-  const _pendingMessages = [];
-  window.addEventListener('message', (e) => _pendingMessages.push(e));
+  // --- Render ---
+  function render() {
+    var root = document.getElementById('root');
 
-  createApp({
-    data() {
-      return { hotels: [], location: '' };
-    },
-    mounted() {
-      // 1. OpenAI structured content injection
-      const injected = window.__mcp_structured_content || window.__mcp_data;
-      if (injected?.hotels) { this.load(injected.hotels); return; }
-
-      // 2. postMessage from ChatGPT's iframe (including buffered ones)
-      const handleMessage = (e) => {
-        // JSON-RPC ui/notifications/tool-result format (ChatGPT Generative UI)
-        if (e.data?.method === 'ui/notifications/tool-result') {
-          const d = e.data?.params?.structuredContent;
-          if (d?.hotels) { this.load(d.hotels); return; }
-        }
-        // Legacy fallback formats
-        const d = e.data?.structuredContent || e.data?.data || e.data;
-        if (d?.hotels) this.load(d.hotels);
-      };
-      _pendingMessages.forEach(handleMessage);
-      window.addEventListener('message', handleMessage);
-
-      // 3. ?data=<base64-json> for local testing
-      const raw = new URLSearchParams(location.search).get('data');
-      if (raw) {
-        try { const p = JSON.parse(atob(raw)); if (p?.hotels) this.load(p.hotels); }
-        catch (_) {}
-      }
-    },
-    methods: {
-      load(hotels) {
-        this.hotels = hotels;
-        this.location = hotels[0]?.location ?? '';
-      },
-      isRealImage(url) {
-        return url && !url.includes('example.com');
-      }
+    if (state.status === 'loading') {
+      root.innerHTML = '<div class="state-center"><div class="spinner"></div><p class="state-sub">Loading hotels&hellip;</p></div>';
+      return;
     }
-  }).mount('#app');
+
+    if (state.status === 'waiting' || state.hotels.length === 0) {
+      root.innerHTML = '<div class="state-center"><div class="state-icon">&#x1F50D;</div><p class="state-title">No hotels found</p><p class="state-sub">Try a different location.</p></div>';
+      return;
+    }
+
+    var cards = state.hotels.map(function (h) {
+      var rating = h.rating || 0;
+      var rounded = Math.round(rating);
+      var stars = '';
+      for (var i = 1; i <= 5; i++) {
+        stars += '<span class="star ' + (i <= rounded ? 'star-on' : 'star-off') + '">&#x2605;</span>';
+      }
+
+      var thumb = (h.image_url && h.image_url.indexOf('example.com') === -1)
+        ? '<img src="' + escHtml(h.image_url) + '" alt="' + escHtml(h.name) + '" onerror="this.style.display=\'none\'">'
+        : '&#x1F3E8;';
+
+      return '<div class="card">'
+        + '  <div class="card-thumb">' + thumb + '</div>'
+        + '  <div class="card-body">'
+        + '    <div class="card-name" title="' + escHtml(h.name) + '">' + escHtml(h.name) + '</div>'
+        + '    <div class="card-location">'
+        + '      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">'
+        + '        <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>'
+        + '      </svg>'
+        + escHtml(h.location)
+        + '    </div>'
+        + '    <div class="card-footer">'
+        + '      <div class="stars">' + stars + '<span class="rating-val">' + rating + '</span></div>'
+        + '      <div class="price"><span class="price-amount">$' + escHtml(String(h.price)) + '</span><span class="price-unit">per night</span></div>'
+        + '    </div>'
+        + '  </div>'
+        + '</div>';
+    }).join('');
+
+    root.innerHTML = '<div class="header"><h2>Hotels in ' + escHtml(state.location) + '</h2>'
+      + '<p>' + state.hotels.length + ' option' + (state.hotels.length !== 1 ? 's' : '') + ' available</p></div>'
+      + '<div class="grid">' + cards + '</div>';
+  }
+
+  function escHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function loadHotels(hotels) {
+    state.hotels = hotels || [];
+    state.location = (hotels && hotels[0] && hotels[0].location) ? hotels[0].location : '';
+    state.status = 'ready';
+    render();
+  }
+
+  // --- Data sources ---
+
+  // 1. ChatGPT Apps SDK: ui/notifications/tool-result (JSON-RPC 2.0 over postMessage)
+  window.addEventListener('message', function (e) {
+    var d = e.data;
+    if (!d) return;
+
+    // Official format: { jsonrpc, method: "ui/notifications/tool-result", params: { structuredContent } }
+    if (d.method === 'ui/notifications/tool-result') {
+      var sc = d.params && d.params.structuredContent;
+      if (sc && sc.hotels) { loadHotels(sc.hotels); return; }
+    }
+
+    // Fallback: plain structuredContent / data envelope
+    var sc2 = d.structuredContent || d.data || d;
+    if (sc2 && sc2.hotels) loadHotels(sc2.hotels);
+  });
+
+  // 2. window.__mcp_structured_content injection
+  var injected = window.__mcp_structured_content || window.__mcp_data;
+  if (injected && injected.hotels) {
+    loadHotels(injected.hotels);
+  }
+
+  // 3. ?data=<base64-json> for direct Vercel testing
+  var raw = new URLSearchParams(location.search).get('data');
+  if (raw) {
+    try {
+      var parsed = JSON.parse(atob(raw));
+      if (parsed && parsed.hotels) loadHotels(parsed.hotels);
+    } catch (_) {}
+  }
+
+  // Initial render (waiting state)
+  render();
+})();
 </script>
 </body>
 </html>

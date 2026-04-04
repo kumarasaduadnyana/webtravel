@@ -78,6 +78,10 @@ namespace TravelAgent.Controllers
                                     }
                                 },
                                 required = new[] { "location" }
+                            },
+                            _meta = new Dictionary<string, object>
+                            {
+                                ["ui"] = new { resourceUri = "ui://hotel-widget" }
                             }
                         }
                     }
@@ -147,7 +151,11 @@ namespace TravelAgent.Controllers
                     {
                         new { type = "text", text = responseText }
                     },
-                    structuredContent = new { hotels = hotelResults }
+                    structuredContent = new { hotels = hotelResults },
+                    _meta = new Dictionary<string, object>
+                    {
+                        ["ui"] = new { resourceUri = "ui://hotel-widget" }
+                    }
                 }
             });
         }
