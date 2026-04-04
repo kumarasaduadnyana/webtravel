@@ -15,19 +15,9 @@
       min-height: 100vh;
     }
 
-    .header {
-      margin-bottom: 20px;
-    }
-    .header h2 {
-      font-size: 1.4rem;
-      font-weight: 700;
-      color: #1a202c;
-    }
-    .header p {
-      font-size: 0.85rem;
-      color: #718096;
-      margin-top: 4px;
-    }
+    .header { margin-bottom: 20px; }
+    .header h2 { font-size: 1.35rem; font-weight: 700; color: #1a202c; }
+    .header p  { font-size: 0.85rem; color: #718096; margin-top: 4px; }
 
     .grid {
       display: grid;
@@ -49,140 +39,95 @@
 
     .card-thumb {
       height: 160px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 3rem;
-      position: relative;
-      overflow: hidden;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 3rem; position: relative; overflow: hidden;
     }
     .card-thumb img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      position: absolute;
-      inset: 0;
+      width: 100%; height: 100%; object-fit: cover;
+      position: absolute; inset: 0;
     }
 
-    .card-body {
-      padding: 16px;
-    }
+    .card-body { padding: 14px 16px; }
 
     .card-name {
-      font-size: 1rem;
-      font-weight: 700;
-      color: #1a202c;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      font-size: 0.97rem; font-weight: 700; color: #1a202c;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
       margin-bottom: 6px;
     }
-
     .card-location {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      font-size: 0.8rem;
-      color: #718096;
-      margin-bottom: 14px;
+      display: flex; align-items: center; gap: 4px;
+      font-size: 0.8rem; color: #718096; margin-bottom: 14px;
     }
-    .card-location svg { flex-shrink: 0; }
-
     .card-footer {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding-top: 12px;
-      border-top: 1px solid #edf2f7;
+      display: flex; align-items: center; justify-content: space-between;
+      padding-top: 10px; border-top: 1px solid #edf2f7;
     }
 
-    .stars {
-      display: flex;
-      align-items: center;
-      gap: 2px;
-    }
-    .star {
-      font-size: 0.9rem;
-      line-height: 1;
-    }
+    .stars { display: flex; align-items: center; gap: 2px; }
+    .star { font-size: 0.88rem; }
     .star-on  { color: #f6ad55; }
     .star-off { color: #e2e8f0; }
-    .rating-val {
-      margin-left: 5px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: #4a5568;
-    }
+    .rating-val { margin-left: 5px; font-size: 0.78rem; font-weight: 600; color: #4a5568; }
 
-    .price {
-      text-align: right;
-    }
-    .price-amount {
-      font-size: 1.1rem;
-      font-weight: 800;
-      color: #2d3748;
-    }
-    .price-unit {
-      font-size: 0.72rem;
-      color: #a0aec0;
-      display: block;
-      margin-top: -2px;
-    }
+    .price-amount { font-size: 1.08rem; font-weight: 800; color: #2d3748; }
+    .price-unit   { font-size: 0.7rem; color: #a0aec0; margin-left: 2px; }
 
-    /* Empty / loading states */
-    .state-center {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 240px;
-      text-align: center;
-      color: #718096;
-      gap: 12px;
+    .state {
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; min-height: 260px;
+      text-align: center; color: #718096; gap: 12px;
     }
-    .state-icon { font-size: 3rem; }
+    .state-icon  { font-size: 3rem; }
     .state-title { font-size: 1.05rem; font-weight: 600; color: #4a5568; }
-    .state-sub   { font-size: 0.85rem; }
 
     .spinner {
       width: 36px; height: 36px;
-      border: 3px solid #e2e8f0;
-      border-top-color: #667eea;
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
+      border: 3px solid #e2e8f0; border-top-color: #667eea;
+      border-radius: 50%; animation: spin 0.7s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
-
 <div id="root"></div>
 
 <script>
 (function () {
-  var state = { status: 'waiting', hotels: [], location: '' };
+  'use strict';
 
-  // --- Render ---
-  function render() {
-    var root = document.getElementById('root');
+  var root = document.getElementById('root');
 
-    if (state.status === 'loading') {
-      root.innerHTML = '<div class="state-center"><div class="spinner"></div><p class="state-sub">Loading hotels&hellip;</p></div>';
-      return;
-    }
+  // ── Render ────────────────────────────────────────────────────────────────
 
-    if (state.status === 'waiting' || state.hotels.length === 0) {
-      root.innerHTML = '<div class="state-center"><div class="state-icon">&#x1F50D;</div><p class="state-title">No hotels found</p><p class="state-sub">Try a different location.</p></div>';
-      return;
-    }
+  function escHtml(s) {
+    return String(s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
 
-    var cards = state.hotels.map(function (h) {
-      var rating = h.rating || 0;
+  function renderSpinner() {
+    root.innerHTML = '<div class="state"><div class="spinner"></div>'
+      + '<p style="font-size:.85rem">Loading hotels\u2026</p></div>';
+  }
+
+  function renderEmpty() {
+    root.innerHTML = '<div class="state"><div class="state-icon">&#x1F50D;</div>'
+      + '<p class="state-title">No hotels found</p>'
+      + '<p style="font-size:.85rem">Try a different location.</p></div>';
+  }
+
+  function renderHotels(hotels) {
+    if (!hotels || hotels.length === 0) { renderEmpty(); return; }
+
+    var location = hotels[0].location || '';
+
+    var cards = hotels.map(function (h) {
+      var rating  = h.rating || 0;
       var rounded = Math.round(rating);
-      var stars = '';
+      var stars   = '';
       for (var i = 1; i <= 5; i++) {
-        stars += '<span class="star ' + (i <= rounded ? 'star-on' : 'star-off') + '">&#x2605;</span>';
+        stars += '<span class="star ' + (i <= rounded ? 'star-on' : 'star-off') + '">&#9733;</span>';
       }
 
       var thumb = (h.image_url && h.image_url.indexOf('example.com') === -1)
@@ -190,78 +135,78 @@
         : '&#x1F3E8;';
 
       return '<div class="card">'
-        + '  <div class="card-thumb">' + thumb + '</div>'
-        + '  <div class="card-body">'
-        + '    <div class="card-name" title="' + escHtml(h.name) + '">' + escHtml(h.name) + '</div>'
-        + '    <div class="card-location">'
-        + '      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">'
-        + '        <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>'
-        + '      </svg>'
+        + '<div class="card-thumb">' + thumb + '</div>'
+        + '<div class="card-body">'
+        + '  <div class="card-name" title="' + escHtml(h.name) + '">' + escHtml(h.name) + '</div>'
+        + '  <div class="card-location">'
+        + '    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">'
+        + '      <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>'
+        + '    </svg>'
         + escHtml(h.location)
-        + '    </div>'
-        + '    <div class="card-footer">'
-        + '      <div class="stars">' + stars + '<span class="rating-val">' + rating + '</span></div>'
-        + '      <div class="price"><span class="price-amount">$' + escHtml(String(h.price)) + '</span><span class="price-unit">per night</span></div>'
+        + '  </div>'
+        + '  <div class="card-footer">'
+        + '    <div class="stars">' + stars + '<span class="rating-val">' + rating + '</span></div>'
+        + '    <div>'
+        + '      <span class="price-amount">$' + escHtml(String(h.price)) + '</span>'
+        + '      <span class="price-unit">/night</span>'
         + '    </div>'
         + '  </div>'
-        + '</div>';
+        + '</div></div>';
     }).join('');
 
-    root.innerHTML = '<div class="header"><h2>Hotels in ' + escHtml(state.location) + '</h2>'
-      + '<p>' + state.hotels.length + ' option' + (state.hotels.length !== 1 ? 's' : '') + ' available</p></div>'
-      + '<div class="grid">' + cards + '</div>';
+    root.innerHTML = '<div class="header">'
+      + '<h2>Hotels in ' + escHtml(location) + '</h2>'
+      + '<p>' + hotels.length + ' option' + (hotels.length !== 1 ? 's' : '') + ' available</p>'
+      + '</div><div class="grid">' + cards + '</div>';
   }
 
-  function escHtml(str) {
-    return String(str)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
+  // ── Data sources (priority order) ─────────────────────────────────────────
+
+  function tryLoad(data) {
+    if (!data) return false;
+    var hotels = data.hotels || (Array.isArray(data) ? data : null);
+    if (hotels) { renderHotels(hotels); return true; }
+    return false;
   }
 
-  function loadHotels(hotels) {
-    state.hotels = hotels || [];
-    state.location = (hotels && hotels[0] && hotels[0].location) ? hotels[0].location : '';
-    state.status = 'ready';
-    render();
+  // 1. window.openai.toolOutput — ChatGPT Apps SDK primary injection
+  //    ChatGPT sets this before or after the iframe loads and fires "openai:set-globals"
+  function checkOpenAiGlobals() {
+    var output = window.openai && window.openai.toolOutput;
+    return tryLoad(output);
   }
 
-  // --- Data sources ---
-
-  // 1. ChatGPT Apps SDK: ui/notifications/tool-result (JSON-RPC 2.0 over postMessage)
+  // 2. postMessage — JSON-RPC ui/notifications/tool-result
   window.addEventListener('message', function (e) {
     var d = e.data;
     if (!d) return;
 
-    // Official format: { jsonrpc, method: "ui/notifications/tool-result", params: { structuredContent } }
     if (d.method === 'ui/notifications/tool-result') {
       var sc = d.params && d.params.structuredContent;
-      if (sc && sc.hotels) { loadHotels(sc.hotels); return; }
+      if (tryLoad(sc)) return;
     }
 
-    // Fallback: plain structuredContent / data envelope
-    var sc2 = d.structuredContent || d.data || d;
-    if (sc2 && sc2.hotels) loadHotels(sc2.hotels);
+    // fallback envelopes
+    tryLoad(d.structuredContent || d.data || (d.hotels ? d : null));
   });
 
-  // 2. window.__mcp_structured_content injection
-  var injected = window.__mcp_structured_content || window.__mcp_data;
-  if (injected && injected.hotels) {
-    loadHotels(injected.hotels);
-  }
-
-  // 3. ?data=<base64-json> for direct Vercel testing
-  var raw = new URLSearchParams(location.search).get('data');
-  if (raw) {
+  // 3. ?data=<base64-json> — Vercel direct-link testing
+  (function () {
     try {
-      var parsed = JSON.parse(atob(raw));
-      if (parsed && parsed.hotels) loadHotels(parsed.hotels);
+      var raw = new URLSearchParams(location.search).get('data');
+      if (raw) tryLoad(JSON.parse(atob(raw)));
     } catch (_) {}
-  }
+  })();
 
-  // Initial render (waiting state)
-  render();
+  // ── Boot ──────────────────────────────────────────────────────────────────
+
+  if (!checkOpenAiGlobals()) {
+    // ChatGPT may set window.openai after the iframe loads — listen for the event
+    window.addEventListener('openai:set-globals', function () {
+      checkOpenAiGlobals();
+    });
+    renderSpinner();
+  }
 })();
 </script>
 </body>

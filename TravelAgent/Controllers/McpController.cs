@@ -9,6 +9,9 @@ namespace TravelAgent.Controllers
     [Route("mcp")]
     public class McpController : ControllerBase
     {
+        // ui:// URI ChatGPT uses to fetch the widget via resources/read
+        private const string WidgetUri = "ui://widget/hotel-widget.html";
+
         private readonly ILogger<McpController> _logger;
         private readonly IHotelService _hotelService;
         private readonly IConfiguration _configuration;
@@ -28,14 +31,16 @@ namespace TravelAgent.Controllers
 
             return request.Method switch
             {
-                "initialize" => HandleInitialize(request),
-                "tools/list" => HandleToolsList(request),
-                "tools/call" => await HandleToolsCall(request),
+                "initialize"     => HandleInitialize(request),
+                "tools/list"     => HandleToolsList(request),
+                "tools/call"     => await HandleToolsCall(request),
                 "resources/list" => HandleResourcesList(request),
                 "resources/read" => HandleResourcesRead(request),
                 _ => Ok(JsonRpcError(request.Id, -32601, $"Method not found: {request.Method}"))
             };
         }
+
+        // ── initialize ────────────────────────────────────────────────────────────
 
         private IActionResult HandleInitialize(McpRequest request)
         {
@@ -51,6 +56,8 @@ namespace TravelAgent.Controllers
                 }
             });
         }
+
+        // ── tools/list ────────────────────────────────────────────────────────────
 
         private IActionResult HandleToolsList(McpRequest request)
         {
@@ -79,15 +86,27 @@ namespace TravelAgent.Controllers
                                 },
                                 required = new[] { "location" }
                             },
+                            annotations = new
+                            {
+                                readOnlyHint = true,
+                                destructiveHint = false,
+                                openWorldHint = false
+                            },
+                            // Tells ChatGPT which widget template to render for this tool
                             _meta = new Dictionary<string, object>
                             {
-                                ["ui"] = new { resourceUri = "ui://hotel-widget" }
+                                ["openai/outputTemplate"]          = WidgetUri,
+                                ["openai/toolInvocation/invoking"] = "Searching for hotels\u2026",
+                                ["openai/toolInvocation/invoked"]  = "Hotel results ready",
+                                ["openai/widgetAccessible"]        = true
                             }
                         }
                     }
                 }
             });
         }
+
+        // ── tools/call ────────────────────────────────────────────────────────────
 
         private async Task<IActionResult> HandleToolsCall(McpRequest request)
         {
@@ -125,20 +144,22 @@ namespace TravelAgent.Controllers
 
             var hotelResults = hotels.Select(h => new
             {
-                id = h.Id,
-                name = h.Name,
-                location = h.Location,
-                rating = h.Rating,
-                price = h.Price,
+                id        = h.Id,
+                name      = h.Name,
+                location  = h.Location,
+                rating    = h.Rating,
+                price     = h.Price,
                 image_url = h.ImageUrl
             }).ToList();
 
-            var widgetUrl = _configuration["WidgetUrl"] ?? "";
-            var dataJson = System.Text.Json.JsonSerializer.Serialize(new { hotels = hotelResults });
+            // Vercel preview link (fallback for plain-text clients)
+            var widgetUrl  = _configuration["WidgetUrl"] ?? "";
+            var dataJson   = System.Text.Json.JsonSerializer.Serialize(new { hotels = hotelResults });
             var dataBase64 = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(dataJson));
             var widgetLink = $"{widgetUrl.TrimEnd('/')}/?data={dataBase64}";
 
-            var markdownTable = BuildMarkdownTable(hotelResults.Select(h => new HotelRow(h.name, h.location, h.rating, h.price)).ToList());
+            var markdownTable = BuildMarkdownTable(
+                hotelResults.Select(h => new HotelRow(h.name, h.location, h.rating, h.price)).ToList());
             var responseText = $"## Hotels in {location}\n\n{markdownTable}\n\n[View full hotel cards]({widgetLink})";
 
             return Ok(new
@@ -147,18 +168,87 @@ namespace TravelAgent.Controllers
                 id = requestId,
                 result = new
                 {
+                    // content: plain-text fallback shown if no widget is rendered
                     content = new[]
                     {
                         new { type = "text", text = responseText }
                     },
+                    // structuredContent: forwarded to widget as window.openai.toolOutput
                     structuredContent = new { hotels = hotelResults },
+                    // _meta: tells ChatGPT to render the widget and shows progress text
                     _meta = new Dictionary<string, object>
                     {
-                        ["ui"] = new { resourceUri = "ui://hotel-widget" }
+                        ["openai/outputTemplate"]          = WidgetUri,
+                        ["openai/toolInvocation/invoking"] = "Searching for hotels\u2026",
+                        ["openai/toolInvocation/invoked"]  = "Hotel results ready"
                     }
                 }
             });
         }
+
+        // ── resources/list ────────────────────────────────────────────────────────
+
+        private IActionResult HandleResourcesList(McpRequest request)
+        {
+            return Ok(new
+            {
+                jsonrpc = "2.0",
+                id = request.Id,
+                result = new
+                {
+                    resources = new[]
+                    {
+                        new
+                        {
+                            uri         = WidgetUri,
+                            name        = "Hotel Search Widget",
+                            mimeType    = "text/html+skybridge",   // required MIME type per OpenAI Apps SDK
+                            description = "Interactive hotel search results card grid",
+                            _meta = new Dictionary<string, object>
+                            {
+                                ["openai/outputTemplate"]  = WidgetUri,
+                                ["openai/widgetAccessible"] = true
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ── resources/read ────────────────────────────────────────────────────────
+
+        private IActionResult HandleResourcesRead(McpRequest request)
+        {
+            var uri = "";
+            if (request.Params.HasValue &&
+                request.Params.Value.TryGetProperty("uri", out var uriEl))
+            {
+                uri = uriEl.GetString() ?? "";
+            }
+
+            if (uri != WidgetUri)
+                return Ok(JsonRpcError(request.Id, -32002, $"Resource not found: {uri}"));
+
+            return Ok(new
+            {
+                jsonrpc = "2.0",
+                id = request.Id,
+                result = new
+                {
+                    contents = new[]
+                    {
+                        new
+                        {
+                            uri      = WidgetUri,
+                            mimeType = "text/html+skybridge",
+                            text     = GetWidgetHtml()
+                        }
+                    }
+                }
+            });
+        }
+
+        // ── helpers ───────────────────────────────────────────────────────────────
 
         private record HotelRow(string name, string location, double? rating, int price);
 
@@ -174,62 +264,6 @@ namespace TravelAgent.Controllers
                 sb.AppendLine($"| {h.name} | {h.location} | {stars} {h.rating} | ${h.price} |");
             }
             return sb.ToString();
-        }
-
-        private IActionResult HandleResourcesList(McpRequest request)
-        {
-            return Ok(new
-            {
-                jsonrpc = "2.0",
-                id = request.Id,
-                result = new
-                {
-                    resources = new[]
-                    {
-                        new
-                        {
-                            uri = "ui://hotel-widget",
-                            name = "Hotel Search Widget",
-                            mimeType = "text/html;profile=mcp-app",
-                            description = "Interactive hotel search results widget"
-                        }
-                    }
-                }
-            });
-        }
-
-        private IActionResult HandleResourcesRead(McpRequest request)
-        {
-            var uri = "";
-            if (request.Params.HasValue)
-            {
-                var root = request.Params.Value;
-                if (root.TryGetProperty("uri", out var uriElement))
-                    uri = uriElement.GetString() ?? "";
-            }
-
-            if (uri != "ui://hotel-widget")
-                return Ok(JsonRpcError(request.Id, -32002, $"Resource not found: {uri}"));
-
-            var html = GetWidgetHtml();
-
-            return Ok(new
-            {
-                jsonrpc = "2.0",
-                id = request.Id,
-                result = new
-                {
-                    contents = new[]
-                    {
-                        new
-                        {
-                            uri = "ui://hotel-widget",
-                            mimeType = "text/html;profile=mcp-app",
-                            text = html
-                        }
-                    }
-                }
-            });
         }
 
         private static string GetWidgetHtml()
