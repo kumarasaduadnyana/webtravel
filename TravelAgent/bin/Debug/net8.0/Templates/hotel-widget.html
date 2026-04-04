@@ -204,15 +204,14 @@
       padding: 2px 7px;
     }
 
-    /* bottom row: stars + score + button */
+    /* bottom: rating row + full-width button */
     .card-bottom {
       display: flex;
-      align-items: center;
-      justify-content: space-between;
+      flex-direction: column;
+      gap: 8px;
       margin-top: auto;
       padding-top: 8px;
       border-top: 1px solid #f0f0f0;
-      gap: 8px;
     }
 
     .rating-row {
@@ -239,20 +238,19 @@
     .score-label { color: #444; }
     .score-count { color: #999; }
 
-    /* book button — teal */
+    /* book button — teal, full width */
     .btn-book {
-      flex-shrink: 0;
+      width: 100%;
       background: #00bfbf;
       color: #fff;
       border: none;
       border-radius: 50px;
-      padding: 8px 20px;
+      padding: 9px 0;
       font-size: 0.78rem;
       font-weight: 700;
       cursor: pointer;
       letter-spacing: 0.02em;
       transition: background 0.15s;
-      white-space: nowrap;
     }
     .btn-book:hover { background: #009e9e; }
 
@@ -312,16 +310,16 @@
       + '</span>';
   }
 
-  // guest_rating is 0–10 scale; display as /100
-  function scoreNum(r) { return Math.round((parseFloat(r) || 0) * 10); }
+  // guest_rating is 0–100 scale from the API
+  function scoreNum(r) { return Math.round(parseFloat(r) || 0); }
 
   function scoreLabel(r) {
     var n = parseFloat(r) || 0;
-    if (n >= 9.5) return 'Exceptional';
-    if (n >= 9)   return 'Wonderful';
-    if (n >= 8)   return 'Excellent';
-    if (n >= 7)   return 'Very Good';
-    if (n >= 6)   return 'Good';
+    if (n >= 95) return 'Exceptional';
+    if (n >= 90) return 'Wonderful';
+    if (n >= 80) return 'Excellent';
+    if (n >= 70) return 'Very Good';
+    if (n >= 60) return 'Good';
     return 'Pleasant';
   }
 
@@ -333,9 +331,9 @@
 
   function resolveAmenities(h) {
     if (h.amenities && h.amenities.length) return h.amenities.slice(0, 5);
-    var n = Math.round((h.guest_rating || 0));
-    if (n >= 9) return ['Pool', 'Spa', 'Restaurant', 'Room service', 'Airport transfer'];
-    if (n >= 7) return ['Pool', 'Restaurant', 'Parking', '24-hr front desk', 'Breakfast'];
+    var n = parseFloat(h.guest_rating) || 0; // 0–100 scale
+    if (n >= 90) return ['Pool', 'Spa', 'Restaurant', 'Room service', 'Airport transfer'];
+    if (n >= 70) return ['Pool', 'Restaurant', 'Parking', '24-hr front desk', 'Breakfast'];
     return ['Parking', 'Restaurant', 'Pet friendly', 'Garden', 'Wi-Fi'];
   }
 

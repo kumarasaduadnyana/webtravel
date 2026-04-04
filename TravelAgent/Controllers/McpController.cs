@@ -15,12 +15,15 @@ namespace TravelAgent.Controllers
         private readonly ILogger<McpController> _logger;
         private readonly IHotelService _hotelService;
         private readonly IConfiguration _configuration;
+        private readonly IHttpClientFactory _httpClientFactory;
 
-        public McpController(ILogger<McpController> logger, IHotelService hotelService, IConfiguration configuration)
+        public McpController(ILogger<McpController> logger, IHotelService hotelService,
+            IConfiguration configuration, IHttpClientFactory httpClientFactory)
         {
             _logger = logger;
             _hotelService = hotelService;
             _configuration = configuration;
+            _httpClientFactory = httpClientFactory;
         }
 
         [HttpPost]
@@ -185,27 +188,43 @@ namespace TravelAgent.Controllers
 
             var hotels = await _hotelService.SearchHotel(destination, checkIn, checkOut, adults, rooms, currency);
 
-            // Build proxy base so images pass the iframe CSP (img-src 'self')
-            var baseUrl = $"{Request.Scheme}://{Request.Host}";
-            string ProxyImg(string? url) =>
-                string.IsNullOrEmpty(url) ? "" : $"{baseUrl}/proxy/image?url={Uri.EscapeDataString(url)}";
-
-            var hotelResults = hotels.Select(h => new
+            // Fetch thumbnail images as base64 data URIs — the only way to pass
+            // ChatGPT's iframe CSP which only allows img-src 'self' and data:
+            var httpClient = _httpClientFactory.CreateClient("ImageProxy");
+            var hotelResults = await Task.WhenAll(hotels.Take(15).Select(async h =>
             {
-                id                   = h.Id,
-                name                 = h.Name,
-                location             = h.Location,
-                star_rating          = h.StarRating,
-                guest_rating         = h.GuestRating,
-                guest_rating_count   = h.GuestRatingCount,
-                price                = h.Price,
-                supplier_price       = h.SupplierPrice,
-                strike_through_price = h.StrikeThroughPrice,
-                currency             = h.Currency,
-                image_url            = ProxyImg(h.ImageUrl),
-                amenities            = h.Amenities,
-                images               = h.Images?.Select(ProxyImg).ToList()
-            }).ToList();
+                string imageDataUri = "";
+                var rawUrl = h.ImageUrl;
+                if (!string.IsNullOrEmpty(rawUrl))
+                {
+                    try
+                    {
+                        // Use _b (medium ~350px) thumbnail instead of _z (very large)
+                        var thumbUrl = System.Text.RegularExpressions.Regex.Replace(
+                            rawUrl, @"_[a-z]\.jpg$", "_b.jpg");
+                        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+                        var bytes = await httpClient.GetByteArrayAsync(thumbUrl, cts.Token);
+                        imageDataUri = $"data:image/jpeg;base64,{Convert.ToBase64String(bytes)}";
+                    }
+                    catch { /* leave empty — card shows placeholder */ }
+                }
+
+                return new
+                {
+                    id                   = h.Id,
+                    name                 = h.Name,
+                    location             = h.Location,
+                    star_rating          = h.StarRating,
+                    guest_rating         = h.GuestRating,
+                    guest_rating_count   = h.GuestRatingCount,
+                    price                = h.Price,
+                    supplier_price       = h.SupplierPrice,
+                    strike_through_price = h.StrikeThroughPrice,
+                    currency             = h.Currency,
+                    image_url            = imageDataUri,
+                    amenities            = h.Amenities
+                };
+            }));
 
             // Vercel preview link (fallback for plain-text clients)
             var widgetUrl  = _configuration["WidgetUrl"] ?? "";
