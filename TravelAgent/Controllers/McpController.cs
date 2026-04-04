@@ -185,21 +185,26 @@ namespace TravelAgent.Controllers
 
             var hotels = await _hotelService.SearchHotel(destination, checkIn, checkOut, adults, rooms, currency);
 
+            // Build proxy base so images pass the iframe CSP (img-src 'self')
+            var baseUrl = $"{Request.Scheme}://{Request.Host}";
+            string ProxyImg(string? url) =>
+                string.IsNullOrEmpty(url) ? "" : $"{baseUrl}/proxy/image?url={Uri.EscapeDataString(url)}";
+
             var hotelResults = hotels.Select(h => new
             {
-                id                  = h.Id,
-                name                = h.Name,
-                location            = h.Location,
-                star_rating         = h.StarRating,
-                guest_rating        = h.GuestRating,
-                guest_rating_count  = h.GuestRatingCount,
-                price               = h.Price,
-                supplier_price      = h.SupplierPrice,
+                id                   = h.Id,
+                name                 = h.Name,
+                location             = h.Location,
+                star_rating          = h.StarRating,
+                guest_rating         = h.GuestRating,
+                guest_rating_count   = h.GuestRatingCount,
+                price                = h.Price,
+                supplier_price       = h.SupplierPrice,
                 strike_through_price = h.StrikeThroughPrice,
-                currency            = h.Currency,
-                image_url           = h.ImageUrl,
-                amenities           = h.Amenities,
-                images              = h.Images
+                currency             = h.Currency,
+                image_url            = ProxyImg(h.ImageUrl),
+                amenities            = h.Amenities,
+                images               = h.Images?.Select(ProxyImg).ToList()
             }).ToList();
 
             // Vercel preview link (fallback for plain-text clients)
