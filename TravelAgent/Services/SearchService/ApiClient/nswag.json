@@ -1,0 +1,31 @@
+{
+  "runtime": "Net60",
+  "defaultVariables": null,
+  "documentGenerator": {
+    "fromDocument": {
+      "url": "https://webapi-search.odin.travlr.com/swagger/v1/swagger.json",
+      "output": null,
+      "newLineBehavior": "Auto"
+    }
+  },
+  "codeGenerators": {
+    "openapiToCSharpClient": {
+      "clientBaseClass": "TravlrSearchApiClientBase",
+      "useHttpRequestMessageCreationMethod": true,
+      "useHttpClientCreationMethod": true,
+      "injectHttpClient": true,
+      "disposeHttpClient": false,
+      "className": "TravlrSearchApiClient",
+      "namespace": "Travlr.Search.Client",
+      "generateClientClasses": true,
+      "generateClientInterfaces": true,
+      "generateExceptionClasses": true,
+      "generateOptionalParameters": false,
+      "exceptionClass": "TravlrSearchApiClientException",
+      "operationGenerationMode": "SingleClientFromOperationId",
+      "output": "./TravlrSearchApiClient.cs",
+      "dateType": "System.DateTime",
+      "dateTimeType": "System.DateTime"
+    }
+  }
+}

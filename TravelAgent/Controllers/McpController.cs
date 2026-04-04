@@ -78,13 +78,41 @@ namespace TravelAgent.Controllers
                                 type = "object",
                                 properties = new
                                 {
-                                    location = new
+                                    destination = new
                                     {
                                         type = "string",
-                                        description = "City or location name to search hotels in (e.g. 'Paris', 'New York')"
+                                        description = "City or destination name (e.g. 'Bali', 'Paris', 'New York')"
+                                    },
+                                    check_in = new
+                                    {
+                                        type = "string",
+                                        description = "Check-in date in YYYY-MM-DD format"
+                                    },
+                                    check_out = new
+                                    {
+                                        type = "string",
+                                        description = "Check-out date in YYYY-MM-DD format"
+                                    },
+                                    adults = new
+                                    {
+                                        type = "integer",
+                                        description = "Number of adult guests (default: 2)",
+                                        @default = 2
+                                    },
+                                    rooms = new
+                                    {
+                                        type = "integer",
+                                        description = "Number of rooms required (default: 1)",
+                                        @default = 1
+                                    },
+                                    currency = new
+                                    {
+                                        type = "string",
+                                        description = "3-letter currency code (default: USD)",
+                                        @default = "AUD"
                                     }
                                 },
-                                required = new[] { "location" }
+                                required = new[] { "destination", "check_in", "check_out" }
                             },
                             annotations = new
                             {
@@ -129,27 +157,47 @@ namespace TravelAgent.Controllers
 
         private async Task<IActionResult> HandleSearchHotels(object? requestId, JsonElement paramsRoot)
         {
-            var location = "";
+            var destination = "";
+            var checkInStr  = "";
+            var checkOutStr = "";
+            var adults      = 2;
+            var rooms       = 1;
+            var currency    = "AUD";
 
-            if (paramsRoot.TryGetProperty("arguments", out var argsElement) &&
-                argsElement.TryGetProperty("location", out var locationElement))
+            if (paramsRoot.TryGetProperty("arguments", out var argsElement))
             {
-                location = locationElement.GetString() ?? "";
+                if (argsElement.TryGetProperty("destination", out var v)) destination = v.GetString() ?? "";
+                if (argsElement.TryGetProperty("check_in",    out v))     checkInStr  = v.GetString() ?? "";
+                if (argsElement.TryGetProperty("check_out",   out v))     checkOutStr = v.GetString() ?? "";
+                if (argsElement.TryGetProperty("adults",      out v) && v.ValueKind == JsonValueKind.Number) adults   = v.GetInt32();
+                if (argsElement.TryGetProperty("rooms",       out v) && v.ValueKind == JsonValueKind.Number) rooms    = v.GetInt32();
+                if (argsElement.TryGetProperty("currency",    out v))     currency    = v.GetString() ?? "USD";
             }
 
-            if (string.IsNullOrWhiteSpace(location))
-                return Ok(JsonRpcError(requestId, -32602, "Invalid params: 'location' is required"));
+            if (string.IsNullOrWhiteSpace(destination))
+                return Ok(JsonRpcError(requestId, -32602, "Invalid params: 'destination' is required"));
 
-            var hotels = await _hotelService.SearchHotel(location);
+            if (!DateTime.TryParse(checkInStr,  out var checkIn))
+                return Ok(JsonRpcError(requestId, -32602, "Invalid params: 'check_in' must be YYYY-MM-DD"));
+
+            if (!DateTime.TryParse(checkOutStr, out var checkOut))
+                return Ok(JsonRpcError(requestId, -32602, "Invalid params: 'check_out' must be YYYY-MM-DD"));
+
+            var hotels = await _hotelService.SearchHotel(destination, checkIn, checkOut, adults, rooms, currency);
 
             var hotelResults = hotels.Select(h => new
             {
-                id        = h.Id,
-                name      = h.Name,
-                location  = h.Location,
-                rating    = h.Rating,
-                price     = h.Price,
-                image_url = h.ImageUrl
+                id                = h.Id,
+                name              = h.Name,
+                location          = h.Location,
+                star_rating       = h.StarRating,
+                guest_rating      = h.GuestRating,
+                guest_rating_count = h.GuestRatingCount,
+                price             = h.Price,
+                currency          = h.Currency,
+                image_url         = h.ImageUrl,
+                amenities         = h.Amenities,
+                images            = h.Images
             }).ToList();
 
             // Vercel preview link (fallback for plain-text clients)
@@ -159,8 +207,8 @@ namespace TravelAgent.Controllers
             var widgetLink = $"{widgetUrl.TrimEnd('/')}/?data={dataBase64}";
 
             var markdownTable = BuildMarkdownTable(
-                hotelResults.Select(h => new HotelRow(h.name, h.location, h.rating, h.price)).ToList());
-            var responseText = $"## Hotels in {location}\n\n{markdownTable}\n\n[View full hotel cards]({widgetLink})";
+                hotelResults.Select(h => new HotelRow(h.name, h.location, h.star_rating, h.price)).ToList());
+            var responseText = $"## Hotels in {destination}\n\n{markdownTable}\n\n[View full hotel cards]({widgetLink})";
 
             return Ok(new
             {
@@ -250,18 +298,18 @@ namespace TravelAgent.Controllers
 
         // ── helpers ───────────────────────────────────────────────────────────────
 
-        private record HotelRow(string name, string location, double? rating, int price);
+        private record HotelRow(string? name, string? location, double? starRating, double? price);
 
         private static string BuildMarkdownTable(List<HotelRow> hotels)
         {
             var sb = new System.Text.StringBuilder();
-            sb.AppendLine("| Hotel | Location | Rating | Price/Night |");
-            sb.AppendLine("|-------|----------|--------|-------------|");
+            sb.AppendLine("| Hotel | Location | Stars | Price/Night |");
+            sb.AppendLine("|-------|----------|-------|-------------|");
             foreach (var h in hotels)
             {
-                var rounded = (int)Math.Round(h.rating ?? 0);
-                var stars = new string('★', rounded) + new string('☆', 5 - rounded);
-                sb.AppendLine($"| {h.name} | {h.location} | {stars} {h.rating} | ${h.price} |");
+                var rounded = (int)Math.Round(h.starRating ?? 0);
+                var stars = new string('★', rounded) + new string('☆', Math.Max(0, 5 - rounded));
+                sb.AppendLine($"| {h.name} | {h.location} | {stars} | {h.price:F0} |");
             }
             return sb.ToString();
         }

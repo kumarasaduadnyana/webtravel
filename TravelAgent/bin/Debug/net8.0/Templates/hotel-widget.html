@@ -8,60 +8,126 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       background: transparent;
-      color: #1a1a1a;
-      font-size: 14px;
-      padding: 16px;
+      color: #e8dcc8;
+      font-size: 13px;
+      padding: 16px 0 16px 16px;
     }
 
-    /* ── Header ─────────────────────────────────────────────────── */
+    /* ── Header ───────────────────────────────────────────────────── */
     .page-header {
-      background: #003580;
-      color: #fff;
-      border-radius: 10px;
-      padding: 14px 18px;
-      margin-bottom: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      padding-right: 16px;
+      margin-bottom: 16px;
     }
     .page-header h2 {
-      font-size: 1.1rem;
+      font-size: 1rem;
       font-weight: 700;
+      color: #f0e6d0;
+      letter-spacing: 0.02em;
     }
-    .page-header .count {
-      font-size: 0.82rem;
-      opacity: 0.85;
-      background: rgba(255,255,255,0.18);
-      border-radius: 20px;
-      padding: 3px 10px;
+    .page-header .sub {
+      font-size: 0.75rem;
+      color: #6b5e48;
+      margin-top: 3px;
     }
 
-    /* ── Card ────────────────────────────────────────────────────── */
-    .card {
-      background: #fff;
-      border: 1px solid #e7e7e7;
-      border-radius: 10px;
-      overflow: hidden;
-      margin-bottom: 12px;
+    /* ── Carousel wrapper ─────────────────────────────────────────── */
+    .carousel-outer {
+      position: relative;
+    }
+
+    .carousel {
       display: flex;
-      transition: box-shadow 0.15s;
+      gap: 14px;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 8px;
+      padding-right: 16px;
+      /* hide scrollbar */
+      scrollbar-width: none;
     }
-    .card:hover { box-shadow: 0 4px 18px rgba(0,53,128,0.13); }
+    .carousel::-webkit-scrollbar { display: none; }
 
-    /* ── Image ───────────────────────────────────────────────────── */
-    .card-img {
-      width: 200px;
-      min-width: 200px;
-      height: 160px;
-      background: linear-gradient(135deg, #003580 0%, #009fe3 100%);
+    /* ── Nav arrows ───────────────────────────────────────────────── */
+    .nav-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: 1px solid #3a3020;
+      background: rgba(20, 16, 8, 0.88);
+      color: #c9a065;
+      cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 3.2rem;
+      font-size: 1rem;
+      z-index: 10;
+      transition: background 0.15s, border-color 0.15s;
+      backdrop-filter: blur(4px);
+    }
+    .nav-btn:hover { background: #1e1a0c; border-color: #c9a065; }
+    .nav-btn.prev { left: -10px; }
+    .nav-btn.next { right:  6px; }
+    .nav-btn[disabled] { opacity: 0.25; pointer-events: none; }
+
+    /* ── Dots ─────────────────────────────────────────────────────── */
+    .dots {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 12px;
+      padding-right: 16px;
+    }
+    .dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: #3a3020;
+      transition: background 0.2s, width 0.2s;
+      cursor: pointer;
+    }
+    .dot.active {
+      background: #c9a065;
+      width: 18px;
+      border-radius: 3px;
+    }
+
+    /* ── Card ─────────────────────────────────────────────────────── */
+    .card {
+      flex-shrink: 0;
+      width: 240px;
+      background: #16120a;
+      border: 1px solid #2a2214;
+      border-radius: 14px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      scroll-snap-align: start;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.65);
+    }
+
+    /* ── Image ────────────────────────────────────────────────────── */
+    .card-img {
+      width: 100%;
+      height: 155px;
+      background: linear-gradient(160deg, #1e1808 0%, #2a200a 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
       position: relative;
       overflow: hidden;
+      flex-shrink: 0;
     }
     .card-img img {
       position: absolute;
@@ -70,152 +136,169 @@
       height: 100%;
       object-fit: cover;
     }
-
-    /* ── Content ─────────────────────────────────────────────────── */
-    .card-content {
-      flex: 1;
-      padding: 14px 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
+    /* Gradient overlay on image */
+    .card-img::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 55px;
+      background: linear-gradient(to top, #16120a, transparent);
     }
 
-    .card-top {
+    /* Star badge overlaid on image */
+    .star-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(14,11,4,0.75);
+      border: 1px solid #3a2e18;
+      border-radius: 6px;
+      padding: 3px 7px;
+      font-size: 0.7rem;
+      color: #c9a065;
+      letter-spacing: 0.05em;
+      z-index: 1;
+      backdrop-filter: blur(4px);
+    }
+
+    /* ── Body ─────────────────────────────────────────────────────── */
+    .card-body {
+      padding: 12px 13px 13px;
       display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 10px;
+      flex-direction: column;
+      gap: 7px;
+      flex: 1;
     }
 
     .hotel-name {
-      font-size: 1rem;
+      font-size: 0.88rem;
       font-weight: 700;
-      color: #003580;
-      line-height: 1.3;
+      color: #f0e6d0;
+      line-height: 1.35;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
     }
 
-    /* Score badge: blue rounded square */
-    .score-badge {
+    /* score row */
+    .score-row {
       display: flex;
-      flex-direction: column;
       align-items: center;
-      flex-shrink: 0;
+      gap: 7px;
     }
-    .score-box {
-      background: #003580;
+    .score-pill {
+      background: #1e3a5f;
       color: #fff;
-      font-size: 0.95rem;
-      font-weight: 700;
-      border-radius: 6px 6px 6px 0;
-      padding: 4px 8px;
-      min-width: 38px;
-      text-align: center;
-    }
-    .score-label {
-      font-size: 0.7rem;
-      color: #595959;
-      margin-top: 2px;
-      white-space: nowrap;
-    }
-
-    .star-row {
-      display: flex;
-      align-items: center;
-      gap: 3px;
-    }
-    .star { font-size: 0.8rem; color: #feba02; }
-
-    .location {
       font-size: 0.78rem;
-      color: #595959;
+      font-weight: 800;
+      border-radius: 6px;
+      padding: 2px 7px;
+    }
+    .score-desc {
+      font-size: 0.74rem;
+      color: #c9a065;
+      font-weight: 600;
+    }
+    .review-count {
+      font-size: 0.7rem;
+      color: #5a4e38;
+      margin-left: auto;
+    }
+
+    /* location */
+    .location {
       display: flex;
       align-items: center;
       gap: 4px;
+      font-size: 0.72rem;
+      color: #6b5e48;
     }
 
-    .badges {
+    /* amenities */
+    .amenities {
       display: flex;
       flex-wrap: wrap;
-      gap: 6px;
-      margin-top: 2px;
+      gap: 4px;
     }
-    .badge-cancel {
-      font-size: 0.74rem;
-      color: #008009;
-      font-weight: 600;
-    }
-    .badge-genius {
-      font-size: 0.72rem;
-      background: #003580;
-      color: #feba02;
-      border-radius: 3px;
-      padding: 1px 6px;
-      font-weight: 700;
+    .amenity-tag {
+      font-size: 0.67rem;
+      color: #8a7a60;
+      background: #1e1a0e;
+      border: 1px solid #2e2818;
+      border-radius: 4px;
+      padding: 2px 6px;
     }
 
-    .card-bottom {
-      display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-      margin-top: auto;
-      padding-top: 8px;
-      border-top: 1px solid #f0f0f0;
-    }
+    /* divider */
+    .divider { border: none; border-top: 1px solid #221e12; margin: 2px 0; }
 
-    .price-block {}
-    .price-note { font-size: 0.72rem; color: #595959; }
-    .price-amount {
-      font-size: 1.4rem;
+    /* price */
+    .price-note { font-size: 0.68rem; color: #5a4e38; }
+    .price-main {
+      font-size: 1.05rem;
       font-weight: 800;
-      color: #1a1a1a;
-      line-height: 1.1;
+      color: #f0e6d0;
+      line-height: 1.2;
     }
-    .price-per { font-size: 0.72rem; color: #595959; }
-    .price-tax  { font-size: 0.7rem; color: #008009; }
+    .price-main .per { font-size: 0.68rem; font-weight: 400; color: #6b5e48; }
+    .price-tax  { font-size: 0.67rem; color: #4a4030; margin-top: 1px; }
 
-    .btn-availability {
-      background: #0071c2;
-      color: #fff;
+    /* CTA */
+    .btn-book {
+      display: block;
+      width: 100%;
+      margin-top: 10px;
+      background: linear-gradient(135deg, #b8924a 0%, #d4a85a 50%, #c9a065 100%);
+      color: #0e0b04;
       border: none;
-      border-radius: 6px;
-      padding: 9px 16px;
-      font-size: 0.82rem;
+      border-radius: 50px;
+      padding: 9px 0;
+      font-size: 0.78rem;
       font-weight: 700;
       cursor: pointer;
-      white-space: nowrap;
-      transition: background 0.15s;
+      letter-spacing: 0.04em;
+      transition: opacity 0.15s;
+      text-align: center;
     }
-    .btn-availability:hover { background: #005999; }
+    .btn-book:hover { opacity: 0.88; }
 
-    /* ── Loading / Empty ─────────────────────────────────────────── */
+    .more-link {
+      text-align: center;
+      font-size: 0.68rem;
+      color: #c9a065;
+      margin-top: 6px;
+      cursor: pointer;
+      opacity: 0.7;
+      transition: opacity 0.15s;
+    }
+    .more-link:hover { opacity: 1; }
+
+    /* ── States ───────────────────────────────────────────────────── */
     .state {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      min-height: 260px;
+      min-height: 220px;
       text-align: center;
-      gap: 14px;
+      gap: 12px;
+      padding-right: 16px;
     }
-    .state-icon  { font-size: 3rem; }
-    .state-title { font-size: 1rem; font-weight: 600; color: #003580; }
-    .state-sub   { font-size: 0.85rem; color: #595959; }
+    .state-icon  { font-size: 2.5rem; }
+    .state-title { font-size: 0.95rem; font-weight: 600; color: #c9a065; }
+    .state-sub   { font-size: 0.8rem; color: #4a4030; }
 
     .spinner {
-      width: 36px; height: 36px;
-      border: 3px solid #d4e2f7;
-      border-top-color: #003580;
+      width: 32px; height: 32px;
+      border: 2px solid #2a2214;
+      border-top-color: #c9a065;
       border-radius: 50%;
-      animation: spin 0.7s linear infinite;
+      animation: spin 0.8s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* ── Responsive ──────────────────────────────────────────────── */
-    @media (max-width: 500px) {
-      .card { flex-direction: column; }
-      .card-img { width: 100%; min-width: unset; height: 140px; }
-      .card-top { flex-direction: column; }
-    }
   </style>
 </head>
 <body>
@@ -227,115 +310,194 @@
 
   var root = document.getElementById('root');
 
-  // ── Helpers ───────────────────────────────────────────────────────────────
+  /* ── Helpers ───────────────────────────────────────────────────────────── */
 
   function esc(s) {
-    return String(s)
+    return String(s == null ? '' : s)
       .replace(/&/g,'&amp;').replace(/</g,'&lt;')
       .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
-  function scoreLabel(r) {
-    if (!r) return '';
-    var n = parseFloat(r) * 2; // our rating is /5, booking is /10
-    if (n >= 9)   return 'Exceptional';
-    if (n >= 8)   return 'Very Good';
-    if (n >= 7)   return 'Good';
-    if (n >= 6)   return 'Pleasant';
-    return 'Review score';
+  function scoreOut10(r) { return (parseFloat(r || 0) * 2).toFixed(1); }
+
+  function scoreDescriptor(r) {
+    var n = parseFloat(r || 0) * 2;
+    if (n >= 9.5) return 'Exceptional';
+    if (n >= 9)   return 'Wonderful';
+    if (n >= 8)   return 'Excellent';
+    if (n >= 7)   return 'Very Good';
+    if (n >= 6)   return 'Good';
+    return 'Pleasant';
   }
 
-  function scoreDisplay(r) {
-    if (!r) return '';
-    return (parseFloat(r) * 2).toFixed(1);
+  function stars(n) {
+    var s = Math.round(parseFloat(n) || 0);
+    var out = '';
+    for (var i = 0; i < s; i++) out += '★';
+    return out;
   }
 
-  function stars(r) {
-    var n = Math.round(r || 0);
-    var s = '';
-    for (var i = 0; i < 5; i++) {
-      s += '<span class="star" style="color:' + (i < n ? '#feba02' : '#d4d4d4') + '">&#9733;</span>';
-    }
-    return s;
+  var FALLBACK_AMENITIES = ['Parking','Restaurant','Pool','Spa','Room service','Pet friendly','Garden','24-hr front desk'];
+  function resolveAmenities(h) {
+    if (h.amenities && h.amenities.length) return h.amenities.slice(0, 4);
+    var n = Math.round((h.guest_rating || 0) * 2);
+    if (n >= 9) return ['Pool','Spa','Restaurant','Room service'];
+    if (n >= 7) return ['Pool','Restaurant','Parking','24-hr front desk'];
+    return ['Parking','Restaurant','Pet friendly','Garden'];
   }
 
-  // ── Render ────────────────────────────────────────────────────────────────
+  var PIN = '<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink:0">'
+    + '<path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>';
+
+  function formatPrice(h) {
+    var p = parseFloat(h.price || 0);
+    if (!p) return 'Price on request';
+    var cur = (h.currency || 'USD').toUpperCase();
+    var sym = cur === 'AUD' ? 'A$' : cur === 'USD' ? '$' : cur === 'EUR' ? '€' : cur + ' ';
+    return sym + p.toFixed(0);
+  }
+
+  /* ── Render ────────────────────────────────────────────────────────────── */
 
   function renderSpinner() {
     root.innerHTML = '<div class="state"><div class="spinner"></div>'
-      + '<p class="state-sub">Searching for the best hotels\u2026</p></div>';
+      + '<p class="state-sub">Searching for the best stays\u2026</p></div>';
   }
 
   function renderEmpty() {
     root.innerHTML = '<div class="state">'
       + '<div class="state-icon">&#x1F50D;</div>'
-      + '<p class="state-title">No hotels found</p>'
-      + '<p class="state-sub">Try searching a different location.</p></div>';
+      + '<p class="state-title">No stays found</p>'
+      + '<p class="state-sub">Try a different destination or dates.</p></div>';
   }
 
   function renderHotels(hotels) {
     if (!hotels || hotels.length === 0) { renderEmpty(); return; }
+    console.log('[hotel-widget] first hotel:', JSON.stringify(hotels[0], null, 2));
 
     var location = hotels[0].location || '';
+    var count    = hotels.length;
 
     var cards = hotels.map(function (h) {
-      var thumb = (h.image_url && h.image_url.indexOf('example.com') === -1)
-        ? '<img src="' + esc(h.image_url) + '" alt="' + esc(h.name) + '" onerror="this.remove()">'
-        : '&#x1F3E8;';
+      var hasImg = h.image_url && h.image_url.indexOf('example.com') === -1;
+      var thumb  = hasImg
+        ? '<img src="' + esc(h.image_url) + '" alt="' + esc(h.name) + '" onerror="console.warn(\'Image failed:\',this.src);this.remove()">'
+        : '&#x1F3DD;';
 
-      var score = h.rating ? (
-        '<div class="score-badge">'
-        + '<div class="score-box">' + esc(scoreDisplay(h.rating)) + '</div>'
-        + '<div class="score-label">' + esc(scoreLabel(h.rating)) + '</div>'
-        + '</div>'
-      ) : '';
+      var starBadge = h.star_rating
+        ? '<div class="star-badge">' + stars(h.star_rating) + '</div>'
+        : '';
+
+      var amenities = resolveAmenities(h);
+      var amenityHtml = amenities.map(function (a) {
+        return '<span class="amenity-tag">' + esc(typeof a === 'string' ? a : a.label) + '</span>';
+      }).join('');
+
+      var guestRating = h.guest_rating;
+      var scoreHtml = guestRating
+        ? '<div class="score-row">'
+          + '<div class="score-pill">' + esc(scoreOut10(guestRating)) + '</div>'
+          + '<div class="score-desc">' + esc(scoreDescriptor(guestRating)) + '</div>'
+          + (h.guest_rating_count ? '<div class="review-count">' + esc(h.guest_rating_count.toLocaleString()) + ' reviews</div>' : '')
+          + '</div>'
+        : '';
 
       return '<div class="card">'
-        + '<div class="card-img">' + thumb + '</div>'
-        + '<div class="card-content">'
-
-        + '<div class="card-top">'
-        + '<div>'
+        + '<div class="card-img">' + thumb + starBadge + '</div>'
+        + '<div class="card-body">'
         + '<div class="hotel-name">' + esc(h.name) + '</div>'
-        + '<div class="star-row" style="margin:4px 0">' + stars(h.rating) + '</div>'
-        + '<div class="location">'
-        + '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#595959" stroke-width="2.5">'
-        + '<path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>'
-        + '</svg>'
-        + esc(h.location)
-        + '</div>'
-        + '</div>'
-        + score
-        + '</div>'
-
-        + '<div class="badges">'
-        + '<span class="badge-cancel">&#10003; Free cancellation</span>'
-        + (h.rating && parseFloat(h.rating) >= 4 ? '<span class="badge-genius">Genius</span>' : '')
-        + '</div>'
-
-        + '<div class="card-bottom">'
-        + '<div class="price-block">'
-        + '<div class="price-note">Starting from</div>'
-        + '<div>'
-        + '<span class="price-amount">$' + esc(String(h.price)) + '</span>'
-        + '<span class="price-per"> /night</span>'
-        + '</div>'
+        + scoreHtml
+        + '<div class="location">' + PIN + '&nbsp;' + esc(h.location) + '</div>'
+        + '<div class="amenities">' + amenityHtml + '</div>'
+        + '<hr class="divider">'
+        + '<div class="price-note">Price from</div>'
+        + '<div class="price-main">' + esc(formatPrice(h)) + '<span class="per"> / night</span></div>'
         + '<div class="price-tax">Includes taxes &amp; fees</div>'
-        + '</div>'
-        + '<button class="btn-availability">See availability &rsaquo;</button>'
-        + '</div>'
-
+        + '<button class="btn-book">View on Booking.com</button>'
+        + '<div class="more-link">More about this stay</div>'
         + '</div></div>';
     }).join('');
 
+    var dotHtml = hotels.map(function (_, i) {
+      return '<div class="dot' + (i === 0 ? ' active' : '') + '" data-index="' + i + '"></div>';
+    }).join('');
+
     root.innerHTML = '<div class="page-header">'
-      + '<h2>&#x1F3E8; Hotels in ' + esc(location) + '</h2>'
-      + '<span class="count">' + hotels.length + ' propert' + (hotels.length !== 1 ? 'ies' : 'y') + '</span>'
+      + '<h2>Stays that match your search</h2>'
+      + '<div class="sub">' + esc(location) + ' &middot; ' + count + ' propert' + (count !== 1 ? 'ies' : 'y') + '</div>'
       + '</div>'
-      + cards;
+      + '<div class="carousel-outer">'
+      + '<button class="nav-btn prev" id="prev" aria-label="Previous">&#8592;</button>'
+      + '<div class="carousel" id="carousel">' + cards + '</div>'
+      + '<button class="nav-btn next" id="next" aria-label="Next">&#8594;</button>'
+      + '</div>'
+      + '<div class="dots" id="dots">' + dotHtml + '</div>';
+
+    initCarousel();
   }
 
-  // ── Data sources ──────────────────────────────────────────────────────────
+  /* ── Carousel logic ────────────────────────────────────────────────────── */
+
+  function initCarousel() {
+    var carousel = document.getElementById('carousel');
+    var prev     = document.getElementById('prev');
+    var next     = document.getElementById('next');
+    var dotsEl   = document.getElementById('dots');
+    if (!carousel) return;
+
+    var cards    = carousel.querySelectorAll('.card');
+    var total    = cards.length;
+    var current  = 0;
+
+    function cardWidth() {
+      return cards[0] ? (cards[0].offsetWidth + 14) : 254; // card width + gap
+    }
+
+    function updateNav() {
+      prev.disabled = current === 0;
+      next.disabled = current >= total - 1;
+    }
+
+    function updateDots() {
+      var dots = dotsEl ? dotsEl.querySelectorAll('.dot') : [];
+      for (var i = 0; i < dots.length; i++) {
+        dots[i].classList.toggle('active', i === current);
+      }
+    }
+
+    function goTo(index) {
+      current = Math.max(0, Math.min(index, total - 1));
+      carousel.scrollTo({ left: current * cardWidth(), behavior: 'smooth' });
+      updateNav();
+      updateDots();
+    }
+
+    prev.addEventListener('click', function () { goTo(current - 1); });
+    next.addEventListener('click', function () { goTo(current + 1); });
+
+    if (dotsEl) {
+      dotsEl.addEventListener('click', function (e) {
+        var dot = e.target.closest('.dot');
+        if (dot) goTo(parseInt(dot.dataset.index, 10));
+      });
+    }
+
+    // Sync dot on manual scroll
+    var scrollTimer;
+    carousel.addEventListener('scroll', function () {
+      clearTimeout(scrollTimer);
+      scrollTimer = setTimeout(function () {
+        var idx = Math.round(carousel.scrollLeft / cardWidth());
+        current = Math.max(0, Math.min(idx, total - 1));
+        updateNav();
+        updateDots();
+      }, 80);
+    });
+
+    updateNav();
+  }
+
+  /* ── Data sources ──────────────────────────────────────────────────────── */
 
   function tryLoad(data) {
     if (!data) return false;
@@ -344,12 +506,10 @@
     return false;
   }
 
-  // 1. window.openai.toolOutput — ChatGPT Apps SDK (primary)
   function checkOpenAiGlobals() {
     return tryLoad(window.openai && window.openai.toolOutput);
   }
 
-  // 2. postMessage — ui/notifications/tool-result
   window.addEventListener('message', function (e) {
     var d = e.data;
     if (!d) return;
@@ -359,7 +519,6 @@
     tryLoad(d.structuredContent || d.data || (d.hotels ? d : null));
   });
 
-  // 3. ?data=<base64> — Vercel preview link
   (function () {
     try {
       var raw = new URLSearchParams(location.search).get('data');
@@ -367,19 +526,12 @@
     } catch (_) {}
   })();
 
-  // Boot
   if (!checkOpenAiGlobals()) {
-    // Listen for the event in case data arrives after this script runs
     window.addEventListener('openai:set-globals', function () { checkOpenAiGlobals(); });
-
-    // Fallback poll: covers the race where the event fired before our listener was added
     var attempts = 0;
     var poll = setInterval(function () {
-      if (checkOpenAiGlobals() || ++attempts >= 50) {
-        clearInterval(poll);
-      }
-    }, 200); // check every 200 ms, up to 10 s
-
+      if (checkOpenAiGlobals() || ++attempts >= 50) clearInterval(poll);
+    }, 200);
     renderSpinner();
   }
 })();

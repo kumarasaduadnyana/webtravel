@@ -1,11 +1,12 @@
 {
   "version": 2,
-  "dgSpecHash": "k7HpkWBn4uHPtfVyX/zDwgTwPJTp8WYI4kOOHaFsT945uTvChTrxoxv5BkAWqxtfS0uCzhusJnpqULxp3bFEhw==",
+  "dgSpecHash": "C9cMXi1HslOZNmtvZQ9V/WTcgsUP7BZw+ymrhhqJ5BuJ/JxaIdJY9YUhZ4CDTA4o2O1b0tlrQg6oA3mQQPFClQ==",
   "success": true,
   "projectFilePath": "C:\\Works\\Ai\\Mcp\\TravelAgent\\TravelAgent.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\kumar\\.nuget\\packages\\microsoft.extensions.apidescription.server\\6.0.5\\microsoft.extensions.apidescription.server.6.0.5.nupkg.sha512",
     "C:\\Users\\kumar\\.nuget\\packages\\microsoft.openapi\\1.6.14\\microsoft.openapi.1.6.14.nupkg.sha512",
+    "C:\\Users\\kumar\\.nuget\\packages\\newtonsoft.json\\13.0.4\\newtonsoft.json.13.0.4.nupkg.sha512",
     "C:\\Users\\kumar\\.nuget\\packages\\swashbuckle.aspnetcore\\6.6.2\\swashbuckle.aspnetcore.6.6.2.nupkg.sha512",
     "C:\\Users\\kumar\\.nuget\\packages\\swashbuckle.aspnetcore.swagger\\6.6.2\\swashbuckle.aspnetcore.swagger.6.6.2.nupkg.sha512",
     "C:\\Users\\kumar\\.nuget\\packages\\swashbuckle.aspnetcore.swaggergen\\6.6.2\\swashbuckle.aspnetcore.swaggergen.6.6.2.nupkg.sha512",

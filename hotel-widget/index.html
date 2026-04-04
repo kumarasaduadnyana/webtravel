@@ -8,62 +8,123 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       background: transparent;
-      color: #e8e0d5;
+      color: #e8dcc8;
       font-size: 13px;
-      padding: 16px;
+      padding: 16px 0 16px 16px;
     }
 
-    /* ── Page header ─────────────────────────────────────────────── */
+    /* ── Header ───────────────────────────────────────────────────── */
     .page-header {
-      margin-bottom: 18px;
+      padding-right: 16px;
+      margin-bottom: 16px;
     }
     .page-header h2 {
-      font-size: 1.05rem;
+      font-size: 1rem;
       font-weight: 700;
-      color: #f5f0e8;
-      letter-spacing: 0.01em;
+      color: #f0e6d0;
+      letter-spacing: 0.02em;
     }
     .page-header .sub {
-      font-size: 0.78rem;
-      color: #7a7060;
+      font-size: 0.75rem;
+      color: #6b5e48;
       margin-top: 3px;
     }
 
-    /* ── Grid ────────────────────────────────────────────────────── */
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
+    /* ── Carousel wrapper ─────────────────────────────────────────── */
+    .carousel-outer {
+      position: relative;
     }
-    @media (max-width: 640px) { .grid { grid-template-columns: 1fr; } }
-    @media (max-width: 900px) and (min-width: 641px) { .grid { grid-template-columns: repeat(2, 1fr); } }
 
-    /* ── Card ────────────────────────────────────────────────────── */
-    .card {
-      background: #1a1712;
-      border: 1px solid #2c2820;
-      border-radius: 12px;
-      overflow: hidden;
+    .carousel {
       display: flex;
-      flex-direction: column;
-      transition: transform 0.18s, box-shadow 0.18s;
+      gap: 14px;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 8px;
+      padding-right: 16px;
+      /* hide scrollbar */
+      scrollbar-width: none;
     }
-    .card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 12px 32px rgba(0,0,0,0.55);
-    }
+    .carousel::-webkit-scrollbar { display: none; }
 
-    /* ── Image ───────────────────────────────────────────────────── */
-    .card-img {
-      width: 100%;
-      aspect-ratio: 4/3;
-      background: linear-gradient(160deg, #1e1a0e 0%, #2e2510 100%);
+    /* ── Nav arrows ───────────────────────────────────────────────── */
+    .nav-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: 1px solid #3a3020;
+      background: rgba(20, 16, 8, 0.88);
+      color: #c9a065;
+      cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 3.5rem;
+      font-size: 1rem;
+      z-index: 10;
+      transition: background 0.15s, border-color 0.15s;
+      backdrop-filter: blur(4px);
+    }
+    .nav-btn:hover { background: #1e1a0c; border-color: #c9a065; }
+    .nav-btn.prev { left: -10px; }
+    .nav-btn.next { right:  6px; }
+    .nav-btn[disabled] { opacity: 0.25; pointer-events: none; }
+
+    /* ── Dots ─────────────────────────────────────────────────────── */
+    .dots {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 12px;
+      padding-right: 16px;
+    }
+    .dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: #3a3020;
+      transition: background 0.2s, width 0.2s;
+      cursor: pointer;
+    }
+    .dot.active {
+      background: #c9a065;
+      width: 18px;
+      border-radius: 3px;
+    }
+
+    /* ── Card ─────────────────────────────────────────────────────── */
+    .card {
+      flex-shrink: 0;
+      width: 240px;
+      background: #16120a;
+      border: 1px solid #2a2214;
+      border-radius: 14px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      scroll-snap-align: start;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.65);
+    }
+
+    /* ── Image ────────────────────────────────────────────────────── */
+    .card-img {
+      width: 100%;
+      height: 155px;
+      background: linear-gradient(160deg, #1e1808 0%, #2a200a 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
       position: relative;
       overflow: hidden;
       flex-shrink: 0;
@@ -75,151 +136,165 @@
       height: 100%;
       object-fit: cover;
     }
+    /* Gradient overlay on image */
+    .card-img::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 55px;
+      background: linear-gradient(to top, #16120a, transparent);
+    }
 
-    /* ── Body ────────────────────────────────────────────────────── */
+    /* Star badge overlaid on image */
+    .star-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(14,11,4,0.75);
+      border: 1px solid #3a2e18;
+      border-radius: 6px;
+      padding: 3px 7px;
+      font-size: 0.7rem;
+      color: #c9a065;
+      letter-spacing: 0.05em;
+      z-index: 1;
+      backdrop-filter: blur(4px);
+    }
+
+    /* ── Body ─────────────────────────────────────────────────────── */
     .card-body {
-      padding: 13px 14px 14px;
+      padding: 12px 13px 13px;
       display: flex;
       flex-direction: column;
       gap: 7px;
       flex: 1;
     }
 
-    /* name row */
-    .name-row {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 8px;
-    }
     .hotel-name {
-      font-size: 0.95rem;
+      font-size: 0.88rem;
       font-weight: 700;
-      color: #f5f0e8;
-      line-height: 1.3;
-      flex: 1;
+      color: #f0e6d0;
+      line-height: 1.35;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
     }
 
-    /* score badge — dark pill with gold text, like Booking.com score */
-    .score-pill {
+    /* score row */
+    .score-row {
       display: flex;
       align-items: center;
-      justify-content: center;
-      background: #2563eb;
+      gap: 7px;
+    }
+    .score-pill {
+      background: #1e3a5f;
       color: #fff;
-      font-size: 0.82rem;
+      font-size: 0.78rem;
       font-weight: 800;
       border-radius: 6px;
-      min-width: 34px;
-      height: 26px;
-      padding: 0 6px;
-      flex-shrink: 0;
+      padding: 2px 7px;
     }
-
-    /* review line */
-    .review-line {
+    .score-desc {
       font-size: 0.74rem;
-      color: #9a8e7a;
-    }
-    .review-line .descriptor {
-      color: #c9a96e;
+      color: #c9a065;
       font-weight: 600;
+    }
+    .review-count {
+      font-size: 0.7rem;
+      color: #5a4e38;
+      margin-left: auto;
     }
 
     /* location */
     .location {
-      font-size: 0.74rem;
-      color: #7a7060;
       display: flex;
       align-items: center;
       gap: 4px;
+      font-size: 0.72rem;
+      color: #6b5e48;
     }
 
     /* amenities */
     .amenities {
       display: flex;
       flex-wrap: wrap;
-      gap: 4px 12px;
-      padding-top: 2px;
-    }
-    .amenity {
-      display: flex;
-      align-items: center;
       gap: 4px;
-      font-size: 0.72rem;
-      color: #8a8070;
     }
-    .amenity svg { flex-shrink: 0; opacity: 0.7; }
+    .amenity-tag {
+      font-size: 0.67rem;
+      color: #8a7a60;
+      background: #1e1a0e;
+      border: 1px solid #2e2818;
+      border-radius: 4px;
+      padding: 2px 6px;
+    }
 
     /* divider */
-    .divider {
-      border: none;
-      border-top: 1px solid #2a2620;
-      margin: 4px 0;
-    }
+    .divider { border: none; border-top: 1px solid #221e12; margin: 2px 0; }
 
-    /* price section */
-    .price-section { margin-top: auto; }
-    .price-note  { font-size: 0.72rem; color: #6a6050; }
-    .price-main  {
-      font-size: 1.08rem;
+    /* price */
+    .price-note { font-size: 0.68rem; color: #5a4e38; }
+    .price-main {
+      font-size: 1.05rem;
       font-weight: 800;
-      color: #f5f0e8;
+      color: #f0e6d0;
       line-height: 1.2;
     }
-    .price-main .per { font-size: 0.72rem; font-weight: 400; color: #7a7060; }
-    .price-tax   { font-size: 0.7rem; color: #5a5040; margin-top: 1px; }
+    .price-main .per { font-size: 0.68rem; font-weight: 400; color: #6b5e48; }
+    .price-tax  { font-size: 0.67rem; color: #4a4030; margin-top: 1px; }
 
-    /* CTA button — Bali Bible gold tone */
+    /* CTA */
     .btn-book {
       display: block;
       width: 100%;
       margin-top: 10px;
-      background: #c9a96e;
-      color: #0d0b07;
+      background: linear-gradient(135deg, #b8924a 0%, #d4a85a 50%, #c9a065 100%);
+      color: #0e0b04;
       border: none;
       border-radius: 50px;
       padding: 9px 0;
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       font-weight: 700;
       cursor: pointer;
-      letter-spacing: 0.03em;
-      transition: background 0.15s;
+      letter-spacing: 0.04em;
+      transition: opacity 0.15s;
       text-align: center;
     }
-    .btn-book:hover { background: #dbbf85; }
+    .btn-book:hover { opacity: 0.88; }
 
-    /* "More about this stay" link */
     .more-link {
       text-align: center;
-      font-size: 0.72rem;
-      color: #c9a96e;
-      margin-top: 7px;
+      font-size: 0.68rem;
+      color: #c9a065;
+      margin-top: 6px;
       cursor: pointer;
-      text-decoration: underline;
-      text-decoration-color: transparent;
-      transition: text-decoration-color 0.15s;
+      opacity: 0.7;
+      transition: opacity 0.15s;
     }
-    .more-link:hover { text-decoration-color: #c9a96e; }
+    .more-link:hover { opacity: 1; }
 
-    /* ── States ──────────────────────────────────────────────────── */
+    /* ── States ───────────────────────────────────────────────────── */
     .state {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      min-height: 240px;
+      min-height: 220px;
       text-align: center;
       gap: 12px;
+      padding-right: 16px;
     }
-    .state-icon  { font-size: 2.8rem; }
-    .state-title { font-size: 1rem; font-weight: 600; color: #c9a96e; }
-    .state-sub   { font-size: 0.82rem; color: #5a5040; }
+    .state-icon  { font-size: 2.5rem; }
+    .state-title { font-size: 0.95rem; font-weight: 600; color: #c9a065; }
+    .state-sub   { font-size: 0.8rem; color: #4a4030; }
 
     .spinner {
-      width: 34px; height: 34px;
-      border: 2px solid #2a2620;
-      border-top-color: #c9a96e;
+      width: 32px; height: 32px;
+      border: 2px solid #2a2214;
+      border-top-color: #c9a065;
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
     }
@@ -235,17 +310,15 @@
 
   var root = document.getElementById('root');
 
-  // ── Helpers ───────────────────────────────────────────────────────────────
+  /* ── Helpers ───────────────────────────────────────────────────────────── */
 
   function esc(s) {
-    return String(s)
+    return String(s == null ? '' : s)
       .replace(/&/g,'&amp;').replace(/</g,'&lt;')
       .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
-  function scoreOut10(r) {
-    return (parseFloat(r || 0) * 2).toFixed(1);
-  }
+  function scoreOut10(r) { return (parseFloat(r || 0) * 2).toFixed(1); }
 
   function scoreDescriptor(r) {
     var n = parseFloat(r || 0) * 2;
@@ -257,39 +330,34 @@
     return 'Pleasant';
   }
 
-  function reviewCount(price) {
-    // Derive a plausible review count from price as seed
-    return (((price * 17 + 831) % 2800) + 300).toLocaleString();
+  function stars(n) {
+    var s = Math.round(parseFloat(n) || 0);
+    var out = '';
+    for (var i = 0; i < s; i++) out += '★';
+    return out;
   }
 
-  // Amenities derived from rating tier
-  var AMENITY_TIERS = [
-    { icon: 'P',  label: 'Parking' },
-    { icon: '🍴', label: 'Restaurant' },
-    { icon: '🛎', label: 'Room service' },
-    { icon: '🐾', label: 'Pet friendly' },
-    { icon: '✓',  label: '24-hr front desk' },
-    { icon: '🌿', label: 'Garden' },
-    { icon: '🏊', label: 'Pool' },
-    { icon: '🧖', label: 'Spa' },
-  ];
-
-  function getAmenities(rating) {
-    var n = Math.round((rating || 0) * 2); // /10
-    var picks = [];
-    if (n >= 6)  picks.push(AMENITY_TIERS[0], AMENITY_TIERS[1]);
-    if (n >= 7)  picks.push(AMENITY_TIERS[2]);
-    if (n >= 8)  picks.push(AMENITY_TIERS[6]);
-    if (n >= 9)  picks.push(AMENITY_TIERS[7]);
-    if (n < 7)   picks.push(AMENITY_TIERS[3]);
-    if (n >= 7 && n < 9) picks.push(AMENITY_TIERS[4]);
-    return picks.slice(0, 4);
+  var FALLBACK_AMENITIES = ['Parking','Restaurant','Pool','Spa','Room service','Pet friendly','Garden','24-hr front desk'];
+  function resolveAmenities(h) {
+    if (h.amenities && h.amenities.length) return h.amenities.slice(0, 4);
+    var n = Math.round((h.guest_rating || 0) * 2);
+    if (n >= 9) return ['Pool','Spa','Restaurant','Room service'];
+    if (n >= 7) return ['Pool','Restaurant','Parking','24-hr front desk'];
+    return ['Parking','Restaurant','Pet friendly','Garden'];
   }
 
-  var PIN = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">'
+  var PIN = '<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink:0">'
     + '<path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>';
 
-  // ── Render ────────────────────────────────────────────────────────────────
+  function formatPrice(h) {
+    var p = parseFloat(h.price || 0);
+    if (!p) return 'Price on request';
+    var cur = (h.currency || 'USD').toUpperCase();
+    var sym = cur === 'AUD' ? 'A$' : cur === 'USD' ? '$' : cur === 'EUR' ? '€' : cur + ' ';
+    return sym + p.toFixed(0);
+  }
+
+  /* ── Render ────────────────────────────────────────────────────────────── */
 
   function renderSpinner() {
     root.innerHTML = '<div class="state"><div class="spinner"></div>'
@@ -300,69 +368,136 @@
     root.innerHTML = '<div class="state">'
       + '<div class="state-icon">&#x1F50D;</div>'
       + '<p class="state-title">No stays found</p>'
-      + '<p class="state-sub">Try a different destination.</p></div>';
+      + '<p class="state-sub">Try a different destination or dates.</p></div>';
   }
 
   function renderHotels(hotels) {
     if (!hotels || hotels.length === 0) { renderEmpty(); return; }
+    console.log('[hotel-widget] first hotel:', JSON.stringify(hotels[0], null, 2));
 
     var location = hotels[0].location || '';
     var count    = hotels.length;
 
     var cards = hotels.map(function (h) {
-      var thumb = (h.image_url && h.image_url.indexOf('example.com') === -1)
-        ? '<img src="' + esc(h.image_url) + '" alt="' + esc(h.name) + '" onerror="this.remove()">'
+      var hasImg = h.image_url && h.image_url.indexOf('example.com') === -1;
+      var thumb  = hasImg
+        ? '<img src="' + esc(h.image_url) + '" alt="' + esc(h.name) + '" onerror="console.warn(\'Image failed:\',this.src);this.remove()">'
         : '&#x1F3DD;';
 
-      var amenities = getAmenities(h.rating);
+      var starBadge = h.star_rating
+        ? '<div class="star-badge">' + stars(h.star_rating) + '</div>'
+        : '';
+
+      var amenities = resolveAmenities(h);
       var amenityHtml = amenities.map(function (a) {
-        return '<span class="amenity"><span>' + a.icon + '</span>' + esc(a.label) + '</span>';
+        return '<span class="amenity-tag">' + esc(typeof a === 'string' ? a : a.label) + '</span>';
       }).join('');
 
+      var guestRating = h.guest_rating;
+      var scoreHtml = guestRating
+        ? '<div class="score-row">'
+          + '<div class="score-pill">' + esc(scoreOut10(guestRating)) + '</div>'
+          + '<div class="score-desc">' + esc(scoreDescriptor(guestRating)) + '</div>'
+          + (h.guest_rating_count ? '<div class="review-count">' + esc(h.guest_rating_count.toLocaleString()) + ' reviews</div>' : '')
+          + '</div>'
+        : '';
+
       return '<div class="card">'
-        + '<div class="card-img">' + thumb + '</div>'
+        + '<div class="card-img">' + thumb + starBadge + '</div>'
         + '<div class="card-body">'
-
-        // name + score
-        + '<div class="name-row">'
         + '<div class="hotel-name">' + esc(h.name) + '</div>'
-        + (h.rating ? '<div class="score-pill">' + esc(scoreOut10(h.rating)) + '</div>' : '')
-        + '</div>'
-
-        // review descriptor
-        + (h.rating ? '<div class="review-line"><span class="descriptor">' + esc(scoreDescriptor(h.rating)) + '</span>'
-          + ' &middot; ' + esc(reviewCount(h.price)) + ' reviews</div>' : '')
-
-        // location
-        + '<div class="location">' + PIN + esc(h.location) + '</div>'
-
-        // amenities
+        + scoreHtml
+        + '<div class="location">' + PIN + '&nbsp;' + esc(h.location) + '</div>'
         + '<div class="amenities">' + amenityHtml + '</div>'
-
         + '<hr class="divider">'
-
-        // price
-        + '<div class="price-section">'
         + '<div class="price-note">Price from</div>'
-        + '<div class="price-main">$' + esc(String(h.price)) + '<span class="per"> / night</span></div>'
+        + '<div class="price-main">' + esc(formatPrice(h)) + '<span class="per"> / night</span></div>'
         + '<div class="price-tax">Includes taxes &amp; fees</div>'
-        + '</div>'
-
-        // CTA
         + '<button class="btn-book">View on Booking.com</button>'
         + '<div class="more-link">More about this stay</div>'
-
         + '</div></div>';
+    }).join('');
+
+    var dotHtml = hotels.map(function (_, i) {
+      return '<div class="dot' + (i === 0 ? ' active' : '') + '" data-index="' + i + '"></div>';
     }).join('');
 
     root.innerHTML = '<div class="page-header">'
       + '<h2>Stays that match your search</h2>'
       + '<div class="sub">' + esc(location) + ' &middot; ' + count + ' propert' + (count !== 1 ? 'ies' : 'y') + '</div>'
       + '</div>'
-      + '<div class="grid">' + cards + '</div>';
+      + '<div class="carousel-outer">'
+      + '<button class="nav-btn prev" id="prev" aria-label="Previous">&#8592;</button>'
+      + '<div class="carousel" id="carousel">' + cards + '</div>'
+      + '<button class="nav-btn next" id="next" aria-label="Next">&#8594;</button>'
+      + '</div>'
+      + '<div class="dots" id="dots">' + dotHtml + '</div>';
+
+    initCarousel();
   }
 
-  // ── Data sources ──────────────────────────────────────────────────────────
+  /* ── Carousel logic ────────────────────────────────────────────────────── */
+
+  function initCarousel() {
+    var carousel = document.getElementById('carousel');
+    var prev     = document.getElementById('prev');
+    var next     = document.getElementById('next');
+    var dotsEl   = document.getElementById('dots');
+    if (!carousel) return;
+
+    var cards    = carousel.querySelectorAll('.card');
+    var total    = cards.length;
+    var current  = 0;
+
+    function cardWidth() {
+      return cards[0] ? (cards[0].offsetWidth + 14) : 254; // card width + gap
+    }
+
+    function updateNav() {
+      prev.disabled = current === 0;
+      next.disabled = current >= total - 1;
+    }
+
+    function updateDots() {
+      var dots = dotsEl ? dotsEl.querySelectorAll('.dot') : [];
+      for (var i = 0; i < dots.length; i++) {
+        dots[i].classList.toggle('active', i === current);
+      }
+    }
+
+    function goTo(index) {
+      current = Math.max(0, Math.min(index, total - 1));
+      carousel.scrollTo({ left: current * cardWidth(), behavior: 'smooth' });
+      updateNav();
+      updateDots();
+    }
+
+    prev.addEventListener('click', function () { goTo(current - 1); });
+    next.addEventListener('click', function () { goTo(current + 1); });
+
+    if (dotsEl) {
+      dotsEl.addEventListener('click', function (e) {
+        var dot = e.target.closest('.dot');
+        if (dot) goTo(parseInt(dot.dataset.index, 10));
+      });
+    }
+
+    // Sync dot on manual scroll
+    var scrollTimer;
+    carousel.addEventListener('scroll', function () {
+      clearTimeout(scrollTimer);
+      scrollTimer = setTimeout(function () {
+        var idx = Math.round(carousel.scrollLeft / cardWidth());
+        current = Math.max(0, Math.min(idx, total - 1));
+        updateNav();
+        updateDots();
+      }, 80);
+    });
+
+    updateNav();
+  }
+
+  /* ── Data sources ──────────────────────────────────────────────────────── */
 
   function tryLoad(data) {
     if (!data) return false;
@@ -391,7 +526,6 @@
     } catch (_) {}
   })();
 
-  // Boot — poll as fallback for race condition
   if (!checkOpenAiGlobals()) {
     window.addEventListener('openai:set-globals', function () { checkOpenAiGlobals(); });
     var attempts = 0;
