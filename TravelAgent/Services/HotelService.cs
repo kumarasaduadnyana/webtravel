@@ -140,11 +140,13 @@ namespace TravelAgent.Services
                 StarRating       = doc.StarRating,
                 GuestRating      = doc.GuestRating,
                 GuestRatingCount = doc.GuestRatingCount,
-                Price            = doc.CurrentCheapestPrice ?? doc.ReferencePrice ?? 0,
-                Currency         = doc.Currency ?? fallbackCurrency,
-                ImageUrl         = doc.Images?.FirstOrDefault(),
-                Amenities        = doc.HotelAmenities?.ToList(),
-                Images           = doc.Images?.ToList()
+                Price              = doc.CurrentCheapestPrice ?? doc.ReferencePrice ?? 0,
+                SupplierPrice      = doc.CurrentCheapestSupplierPrice,
+                StrikeThroughPrice = doc.CurrentStrikeThroughPrice,
+                Currency           = doc.Currency ?? fallbackCurrency,
+                ImageUrl           = doc.Images?.FirstOrDefault(),
+                Amenities          = doc.HotelAmenities?.ToList(),
+                Images             = doc.Images?.ToList()
             }).ToList();
         }
     }

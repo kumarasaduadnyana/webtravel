@@ -187,17 +187,19 @@ namespace TravelAgent.Controllers
 
             var hotelResults = hotels.Select(h => new
             {
-                id                = h.Id,
-                name              = h.Name,
-                location          = h.Location,
-                star_rating       = h.StarRating,
-                guest_rating      = h.GuestRating,
-                guest_rating_count = h.GuestRatingCount,
-                price             = h.Price,
-                currency          = h.Currency,
-                image_url         = h.ImageUrl,
-                amenities         = h.Amenities,
-                images            = h.Images
+                id                  = h.Id,
+                name                = h.Name,
+                location            = h.Location,
+                star_rating         = h.StarRating,
+                guest_rating        = h.GuestRating,
+                guest_rating_count  = h.GuestRatingCount,
+                price               = h.Price,
+                supplier_price      = h.SupplierPrice,
+                strike_through_price = h.StrikeThroughPrice,
+                currency            = h.Currency,
+                image_url           = h.ImageUrl,
+                amenities           = h.Amenities,
+                images              = h.Images
             }).ToList();
 
             // Vercel preview link (fallback for plain-text clients)
