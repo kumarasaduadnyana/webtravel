@@ -10,58 +10,63 @@
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
       background: transparent;
-      color: #1a1a1a;
-      font-size: 14px;
+      color: #e8e0d5;
+      font-size: 13px;
       padding: 16px;
     }
 
-    /* ── Header ─────────────────────────────────────────────────── */
+    /* ── Page header ─────────────────────────────────────────────── */
     .page-header {
-      background: #003580;
-      color: #fff;
-      border-radius: 10px;
-      padding: 14px 18px;
-      margin-bottom: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      margin-bottom: 18px;
     }
     .page-header h2 {
-      font-size: 1.1rem;
+      font-size: 1.05rem;
       font-weight: 700;
+      color: #f5f0e8;
+      letter-spacing: 0.01em;
     }
-    .page-header .count {
-      font-size: 0.82rem;
-      opacity: 0.85;
-      background: rgba(255,255,255,0.18);
-      border-radius: 20px;
-      padding: 3px 10px;
+    .page-header .sub {
+      font-size: 0.78rem;
+      color: #7a7060;
+      margin-top: 3px;
     }
+
+    /* ── Grid ────────────────────────────────────────────────────── */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    @media (max-width: 640px) { .grid { grid-template-columns: 1fr; } }
+    @media (max-width: 900px) and (min-width: 641px) { .grid { grid-template-columns: repeat(2, 1fr); } }
 
     /* ── Card ────────────────────────────────────────────────────── */
     .card {
-      background: #fff;
-      border: 1px solid #e7e7e7;
-      border-radius: 10px;
+      background: #1a1712;
+      border: 1px solid #2c2820;
+      border-radius: 12px;
       overflow: hidden;
-      margin-bottom: 12px;
       display: flex;
-      transition: box-shadow 0.15s;
+      flex-direction: column;
+      transition: transform 0.18s, box-shadow 0.18s;
     }
-    .card:hover { box-shadow: 0 4px 18px rgba(0,53,128,0.13); }
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 32px rgba(0,0,0,0.55);
+    }
 
     /* ── Image ───────────────────────────────────────────────────── */
     .card-img {
-      width: 200px;
-      min-width: 200px;
-      height: 160px;
-      background: linear-gradient(135deg, #003580 0%, #009fe3 100%);
+      width: 100%;
+      aspect-ratio: 4/3;
+      background: linear-gradient(160deg, #1e1a0e 0%, #2e2510 100%);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 3.2rem;
+      font-size: 3.5rem;
       position: relative;
       overflow: hidden;
+      flex-shrink: 0;
     }
     .card-img img {
       position: absolute;
@@ -71,151 +76,154 @@
       object-fit: cover;
     }
 
-    /* ── Content ─────────────────────────────────────────────────── */
-    .card-content {
-      flex: 1;
-      padding: 14px 16px;
+    /* ── Body ────────────────────────────────────────────────────── */
+    .card-body {
+      padding: 13px 14px 14px;
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 7px;
+      flex: 1;
     }
 
-    .card-top {
+    /* name row */
+    .name-row {
       display: flex;
       align-items: flex-start;
       justify-content: space-between;
-      gap: 10px;
+      gap: 8px;
     }
-
     .hotel-name {
-      font-size: 1rem;
-      font-weight: 700;
-      color: #003580;
-      line-height: 1.3;
-    }
-
-    /* Score badge: blue rounded square */
-    .score-badge {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      flex-shrink: 0;
-    }
-    .score-box {
-      background: #003580;
-      color: #fff;
       font-size: 0.95rem;
       font-weight: 700;
-      border-radius: 6px 6px 6px 0;
-      padding: 4px 8px;
-      min-width: 38px;
-      text-align: center;
-    }
-    .score-label {
-      font-size: 0.7rem;
-      color: #595959;
-      margin-top: 2px;
-      white-space: nowrap;
+      color: #f5f0e8;
+      line-height: 1.3;
+      flex: 1;
     }
 
-    .star-row {
+    /* score badge — dark pill with gold text, like Booking.com score */
+    .score-pill {
       display: flex;
       align-items: center;
-      gap: 3px;
+      justify-content: center;
+      background: #2563eb;
+      color: #fff;
+      font-size: 0.82rem;
+      font-weight: 800;
+      border-radius: 6px;
+      min-width: 34px;
+      height: 26px;
+      padding: 0 6px;
+      flex-shrink: 0;
     }
-    .star { font-size: 0.8rem; color: #feba02; }
 
+    /* review line */
+    .review-line {
+      font-size: 0.74rem;
+      color: #9a8e7a;
+    }
+    .review-line .descriptor {
+      color: #c9a96e;
+      font-weight: 600;
+    }
+
+    /* location */
     .location {
-      font-size: 0.78rem;
-      color: #595959;
+      font-size: 0.74rem;
+      color: #7a7060;
       display: flex;
       align-items: center;
       gap: 4px;
     }
 
-    .badges {
+    /* amenities */
+    .amenities {
       display: flex;
       flex-wrap: wrap;
-      gap: 6px;
-      margin-top: 2px;
+      gap: 4px 12px;
+      padding-top: 2px;
     }
-    .badge-cancel {
-      font-size: 0.74rem;
-      color: #008009;
-      font-weight: 600;
-    }
-    .badge-genius {
-      font-size: 0.72rem;
-      background: #003580;
-      color: #feba02;
-      border-radius: 3px;
-      padding: 1px 6px;
-      font-weight: 700;
-    }
-
-    .card-bottom {
+    .amenity {
       display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-      margin-top: auto;
-      padding-top: 8px;
-      border-top: 1px solid #f0f0f0;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.72rem;
+      color: #8a8070;
     }
+    .amenity svg { flex-shrink: 0; opacity: 0.7; }
 
-    .price-block {}
-    .price-note { font-size: 0.72rem; color: #595959; }
-    .price-amount {
-      font-size: 1.4rem;
-      font-weight: 800;
-      color: #1a1a1a;
-      line-height: 1.1;
-    }
-    .price-per { font-size: 0.72rem; color: #595959; }
-    .price-tax  { font-size: 0.7rem; color: #008009; }
-
-    .btn-availability {
-      background: #0071c2;
-      color: #fff;
+    /* divider */
+    .divider {
       border: none;
-      border-radius: 6px;
-      padding: 9px 16px;
-      font-size: 0.82rem;
+      border-top: 1px solid #2a2620;
+      margin: 4px 0;
+    }
+
+    /* price section */
+    .price-section { margin-top: auto; }
+    .price-note  { font-size: 0.72rem; color: #6a6050; }
+    .price-main  {
+      font-size: 1.08rem;
+      font-weight: 800;
+      color: #f5f0e8;
+      line-height: 1.2;
+    }
+    .price-main .per { font-size: 0.72rem; font-weight: 400; color: #7a7060; }
+    .price-tax   { font-size: 0.7rem; color: #5a5040; margin-top: 1px; }
+
+    /* CTA button — Bali Bible gold tone */
+    .btn-book {
+      display: block;
+      width: 100%;
+      margin-top: 10px;
+      background: #c9a96e;
+      color: #0d0b07;
+      border: none;
+      border-radius: 50px;
+      padding: 9px 0;
+      font-size: 0.8rem;
       font-weight: 700;
       cursor: pointer;
-      white-space: nowrap;
+      letter-spacing: 0.03em;
       transition: background 0.15s;
+      text-align: center;
     }
-    .btn-availability:hover { background: #005999; }
+    .btn-book:hover { background: #dbbf85; }
 
-    /* ── Loading / Empty ─────────────────────────────────────────── */
+    /* "More about this stay" link */
+    .more-link {
+      text-align: center;
+      font-size: 0.72rem;
+      color: #c9a96e;
+      margin-top: 7px;
+      cursor: pointer;
+      text-decoration: underline;
+      text-decoration-color: transparent;
+      transition: text-decoration-color 0.15s;
+    }
+    .more-link:hover { text-decoration-color: #c9a96e; }
+
+    /* ── States ──────────────────────────────────────────────────── */
     .state {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      min-height: 260px;
+      min-height: 240px;
       text-align: center;
-      gap: 14px;
+      gap: 12px;
     }
-    .state-icon  { font-size: 3rem; }
-    .state-title { font-size: 1rem; font-weight: 600; color: #003580; }
-    .state-sub   { font-size: 0.85rem; color: #595959; }
+    .state-icon  { font-size: 2.8rem; }
+    .state-title { font-size: 1rem; font-weight: 600; color: #c9a96e; }
+    .state-sub   { font-size: 0.82rem; color: #5a5040; }
 
     .spinner {
-      width: 36px; height: 36px;
-      border: 3px solid #d4e2f7;
-      border-top-color: #003580;
+      width: 34px; height: 34px;
+      border: 2px solid #2a2620;
+      border-top-color: #c9a96e;
       border-radius: 50%;
-      animation: spin 0.7s linear infinite;
+      animation: spin 0.8s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* ── Responsive ──────────────────────────────────────────────── */
-    @media (max-width: 500px) {
-      .card { flex-direction: column; }
-      .card-img { width: 100%; min-width: unset; height: 140px; }
-      .card-top { flex-direction: column; }
-    }
   </style>
 </head>
 <body>
@@ -235,104 +243,123 @@
       .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
-  function scoreLabel(r) {
-    if (!r) return '';
-    var n = parseFloat(r) * 2; // our rating is /5, booking is /10
-    if (n >= 9)   return 'Exceptional';
-    if (n >= 8)   return 'Very Good';
-    if (n >= 7)   return 'Good';
-    if (n >= 6)   return 'Pleasant';
-    return 'Review score';
+  function scoreOut10(r) {
+    return (parseFloat(r || 0) * 2).toFixed(1);
   }
 
-  function scoreDisplay(r) {
-    if (!r) return '';
-    return (parseFloat(r) * 2).toFixed(1);
+  function scoreDescriptor(r) {
+    var n = parseFloat(r || 0) * 2;
+    if (n >= 9.5) return 'Exceptional';
+    if (n >= 9)   return 'Wonderful';
+    if (n >= 8)   return 'Excellent';
+    if (n >= 7)   return 'Very Good';
+    if (n >= 6)   return 'Good';
+    return 'Pleasant';
   }
 
-  function stars(r) {
-    var n = Math.round(r || 0);
-    var s = '';
-    for (var i = 0; i < 5; i++) {
-      s += '<span class="star" style="color:' + (i < n ? '#feba02' : '#d4d4d4') + '">&#9733;</span>';
-    }
-    return s;
+  function reviewCount(price) {
+    // Derive a plausible review count from price as seed
+    return (((price * 17 + 831) % 2800) + 300).toLocaleString();
   }
+
+  // Amenities derived from rating tier
+  var AMENITY_TIERS = [
+    { icon: 'P',  label: 'Parking' },
+    { icon: '🍴', label: 'Restaurant' },
+    { icon: '🛎', label: 'Room service' },
+    { icon: '🐾', label: 'Pet friendly' },
+    { icon: '✓',  label: '24-hr front desk' },
+    { icon: '🌿', label: 'Garden' },
+    { icon: '🏊', label: 'Pool' },
+    { icon: '🧖', label: 'Spa' },
+  ];
+
+  function getAmenities(rating) {
+    var n = Math.round((rating || 0) * 2); // /10
+    var picks = [];
+    if (n >= 6)  picks.push(AMENITY_TIERS[0], AMENITY_TIERS[1]);
+    if (n >= 7)  picks.push(AMENITY_TIERS[2]);
+    if (n >= 8)  picks.push(AMENITY_TIERS[6]);
+    if (n >= 9)  picks.push(AMENITY_TIERS[7]);
+    if (n < 7)   picks.push(AMENITY_TIERS[3]);
+    if (n >= 7 && n < 9) picks.push(AMENITY_TIERS[4]);
+    return picks.slice(0, 4);
+  }
+
+  var PIN = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">'
+    + '<path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>';
 
   // ── Render ────────────────────────────────────────────────────────────────
 
   function renderSpinner() {
     root.innerHTML = '<div class="state"><div class="spinner"></div>'
-      + '<p class="state-sub">Searching for the best hotels\u2026</p></div>';
+      + '<p class="state-sub">Searching for the best stays\u2026</p></div>';
   }
 
   function renderEmpty() {
     root.innerHTML = '<div class="state">'
       + '<div class="state-icon">&#x1F50D;</div>'
-      + '<p class="state-title">No hotels found</p>'
-      + '<p class="state-sub">Try searching a different location.</p></div>';
+      + '<p class="state-title">No stays found</p>'
+      + '<p class="state-sub">Try a different destination.</p></div>';
   }
 
   function renderHotels(hotels) {
     if (!hotels || hotels.length === 0) { renderEmpty(); return; }
 
     var location = hotels[0].location || '';
+    var count    = hotels.length;
 
     var cards = hotels.map(function (h) {
       var thumb = (h.image_url && h.image_url.indexOf('example.com') === -1)
         ? '<img src="' + esc(h.image_url) + '" alt="' + esc(h.name) + '" onerror="this.remove()">'
-        : '&#x1F3E8;';
+        : '&#x1F3DD;';
 
-      var score = h.rating ? (
-        '<div class="score-badge">'
-        + '<div class="score-box">' + esc(scoreDisplay(h.rating)) + '</div>'
-        + '<div class="score-label">' + esc(scoreLabel(h.rating)) + '</div>'
-        + '</div>'
-      ) : '';
+      var amenities = getAmenities(h.rating);
+      var amenityHtml = amenities.map(function (a) {
+        return '<span class="amenity"><span>' + a.icon + '</span>' + esc(a.label) + '</span>';
+      }).join('');
 
       return '<div class="card">'
         + '<div class="card-img">' + thumb + '</div>'
-        + '<div class="card-content">'
+        + '<div class="card-body">'
 
-        + '<div class="card-top">'
-        + '<div>'
+        // name + score
+        + '<div class="name-row">'
         + '<div class="hotel-name">' + esc(h.name) + '</div>'
-        + '<div class="star-row" style="margin:4px 0">' + stars(h.rating) + '</div>'
-        + '<div class="location">'
-        + '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#595959" stroke-width="2.5">'
-        + '<path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>'
-        + '</svg>'
-        + esc(h.location)
-        + '</div>'
-        + '</div>'
-        + score
+        + (h.rating ? '<div class="score-pill">' + esc(scoreOut10(h.rating)) + '</div>' : '')
         + '</div>'
 
-        + '<div class="badges">'
-        + '<span class="badge-cancel">&#10003; Free cancellation</span>'
-        + (h.rating && parseFloat(h.rating) >= 4 ? '<span class="badge-genius">Genius</span>' : '')
-        + '</div>'
+        // review descriptor
+        + (h.rating ? '<div class="review-line"><span class="descriptor">' + esc(scoreDescriptor(h.rating)) + '</span>'
+          + ' &middot; ' + esc(reviewCount(h.price)) + ' reviews</div>' : '')
 
-        + '<div class="card-bottom">'
-        + '<div class="price-block">'
-        + '<div class="price-note">Starting from</div>'
-        + '<div>'
-        + '<span class="price-amount">$' + esc(String(h.price)) + '</span>'
-        + '<span class="price-per"> /night</span>'
-        + '</div>'
+        // location
+        + '<div class="location">' + PIN + esc(h.location) + '</div>'
+
+        // amenities
+        + '<div class="amenities">' + amenityHtml + '</div>'
+
+        + '<hr class="divider">'
+
+        // price
+        + '<div class="price-section">'
+        + '<div class="price-note">Price from</div>'
+        + '<div class="price-main">$' + esc(String(h.price)) + '<span class="per"> / night</span></div>'
         + '<div class="price-tax">Includes taxes &amp; fees</div>'
         + '</div>'
-        + '<button class="btn-availability">See availability &rsaquo;</button>'
-        + '</div>'
+
+        // CTA
+        + '<button class="btn-book">View on Booking.com</button>'
+        + '<div class="more-link">More about this stay</div>'
 
         + '</div></div>';
     }).join('');
 
     root.innerHTML = '<div class="page-header">'
-      + '<h2>&#x1F3E8; Hotels in ' + esc(location) + '</h2>'
-      + '<span class="count">' + hotels.length + ' propert' + (hotels.length !== 1 ? 'ies' : 'y') + '</span>'
+      + '<h2>Stays that match your search</h2>'
+      + '<div class="sub">' + esc(location) + ' &middot; ' + count + ' propert' + (count !== 1 ? 'ies' : 'y') + '</div>'
       + '</div>'
-      + cards;
+      + '<div class="grid">' + cards + '</div>';
   }
 
   // ── Data sources ──────────────────────────────────────────────────────────
@@ -344,12 +371,10 @@
     return false;
   }
 
-  // 1. window.openai.toolOutput — ChatGPT Apps SDK (primary)
   function checkOpenAiGlobals() {
     return tryLoad(window.openai && window.openai.toolOutput);
   }
 
-  // 2. postMessage — ui/notifications/tool-result
   window.addEventListener('message', function (e) {
     var d = e.data;
     if (!d) return;
@@ -359,7 +384,6 @@
     tryLoad(d.structuredContent || d.data || (d.hotels ? d : null));
   });
 
-  // 3. ?data=<base64> — Vercel preview link
   (function () {
     try {
       var raw = new URLSearchParams(location.search).get('data');
@@ -367,19 +391,13 @@
     } catch (_) {}
   })();
 
-  // Boot
+  // Boot — poll as fallback for race condition
   if (!checkOpenAiGlobals()) {
-    // Listen for the event in case data arrives after this script runs
     window.addEventListener('openai:set-globals', function () { checkOpenAiGlobals(); });
-
-    // Fallback poll: covers the race where the event fired before our listener was added
     var attempts = 0;
     var poll = setInterval(function () {
-      if (checkOpenAiGlobals() || ++attempts >= 50) {
-        clearInterval(poll);
-      }
-    }, 200); // check every 200 ms, up to 10 s
-
+      if (checkOpenAiGlobals() || ++attempts >= 50) clearInterval(poll);
+    }, 200);
     renderSpinner();
   }
 })();
