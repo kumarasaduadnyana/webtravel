@@ -9,8 +9,9 @@ namespace TravelAgent.Controllers
     [Route("mcp")]
     public class McpController : ControllerBase
     {
-        // ui:// URI ChatGPT uses to fetch the widget via resources/read
-        private const string WidgetUri = "ui://widget/hotel-widget.html";
+        // Vercel-hosted widget URL — ChatGPT loads this as a sandboxed iframe.
+        // Using a real HTTPS URL avoids ChatGPT's page-level CSP blocking inline scripts.
+        private string WidgetUri => _configuration["WidgetUrl"]?.TrimEnd('/') ?? "https://webtravel-olive.vercel.app";
 
         private readonly ILogger<McpController> _logger;
         private readonly IHotelService _hotelService;
@@ -300,8 +301,10 @@ namespace TravelAgent.Controllers
                 uri = uriEl.GetString() ?? "";
             }
 
-            if (uri != WidgetUri)
-                return Ok(JsonRpcError(request.Id, -32002, $"Resource not found: {uri}"));
+            // When openai/outputTemplate is an HTTPS URL, ChatGPT loads it directly
+            // as an iframe and does not call resources/read. Keep this for compatibility.
+            if (string.IsNullOrEmpty(uri))
+                return Ok(JsonRpcError(request.Id, -32002, "Missing uri parameter"));
 
             return Ok(new
             {
@@ -313,7 +316,7 @@ namespace TravelAgent.Controllers
                     {
                         new
                         {
-                            uri      = WidgetUri,
+                            uri      = uri,
                             mimeType = "text/html+skybridge",
                             text     = GetWidgetHtml()
                         }
