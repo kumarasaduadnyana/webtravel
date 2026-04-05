@@ -502,10 +502,10 @@
 
     var cards = hotels.map(function (h, idx) {
       var imgUrl = resolveImage(h);
-      // Always include emoji as fallback; img covers it when loaded, hides on error
+      // Always include placeholder; img covers it when loaded, hides on error
       var imgHtml = imgUrl
-        ? '&#x1F3DD;<img src="' + esc(imgUrl) + '" alt="' + esc(h.name) + '" onerror="this.style.display=\'none\'">'
-        : '&#x1F3DD;';
+        ? '<span style="font-size:2.5rem">\uD83C\uDFDD</span><img src="' + esc(imgUrl) + '" alt="' + esc(h.name) + '" onerror="this.style.display=\'none\'">'
+        : '<span style="font-size:2.5rem">\uD83C\uDFDD</span>';
 
       var cur = (h.currency || 'AUD').toUpperCase();
       var priceMain = fmtPrice(h.price, cur);
@@ -582,17 +582,7 @@
       var hotel = hotels[idx];
       if (!hotel) return;
       var ctx = _context || { check_in: '', check_out: '', adults: 2, rooms: 1, currency: 'AUD' };
-      if (_apiUrl) {
-        fetchAndShowDetail(hotel, ctx, _apiUrl);
-      } else {
-        // No API URL — prompt user to ask the AI for details
-        root.innerHTML = '<div class="state">'
-          + '<p class="state-title">Ask for details</p>'
-          + '<p class="state-sub">Ask the assistant: "Show me details for ' + esc(hotel.name || 'this hotel') + '"</p>'
-          + '<button class="btn-book" style="margin-top:12px;width:auto;padding:9px 20px" id="backToList">Back to results</button>'
-          + '</div>';
-        document.getElementById('backToList').addEventListener('click', function() { renderHotels(hotels); });
-      }
+      fetchAndShowDetail(hotel, ctx);
     });
   }
 
@@ -647,20 +637,21 @@
   }
 
   /* ── Global state ──────────────────────────────────────────────── */
-  var _context = null;   // { check_in, check_out, adults, rooms, currency }
-  var _apiUrl  = null;   // backend base URL
+  var _context = null;         // { check_in, check_out, adults, rooms, currency }
+  var _apiUrl  = null;         // backend base URL
   var _lastHotels = null;
+  var _onDetailRendered = null; // callback cleared when detail renders successfully
 
-  /* ── Amenity icon map ──────────────────────────────────────────── */
+  /* ── Amenity icon map (unicode escapes to avoid parse issues) ───── */
   var AMENITY_ICONS = {
-    'wifi': '📶', 'wi-fi': '📶', 'internet': '📶',
-    'pool': '🏊', 'swimming': '🏊',
-    'spa': '💆', 'gym': '🏋️', 'fitness': '🏋️',
-    'restaurant': '🍽️', 'dining': '🍽️',
-    'bar': '🍸', 'breakfast': '☕',
-    'parking': '🅿️', 'airport': '✈️',
-    'room service': '🛎️', 'concierge': '🛎️',
-    'pet': '🐾', 'garden': '🌿', 'beach': '🏖️'
+    'wifi': '\uD83D\uDCF6', 'wi-fi': '\uD83D\uDCF6', 'internet': '\uD83D\uDCF6',
+    'pool': '\uD83C\uDFCA', 'swimming': '\uD83C\uDFCA',
+    'spa': '\uD83D\uDEC6', 'gym': '\uD83C\uDFCB', 'fitness': '\uD83C\uDFCB',
+    'restaurant': '\uD83C\uDF7D', 'dining': '\uD83C\uDF7D',
+    'bar': '\uD83C\uDF78', 'breakfast': '\u2615',
+    'parking': '\uD83C\uDD7F', 'airport': '\u2708',
+    'room service': '\uD83D\uDECE', 'concierge': '\uD83D\uDECE',
+    'pet': '\uD83D\uDC3E', 'garden': '\uD83C\uDF3F', 'beach': '\uD83C\uDFD6'
   };
 
   function amenityIcon(name) {
@@ -668,7 +659,7 @@
     for (var key in AMENITY_ICONS) {
       if (lower.indexOf(key) !== -1) return AMENITY_ICONS[key];
     }
-    return '✓';
+    return '\u2713';
   }
 
   /* ── Detail view ──────────────────────────────────────────────── */
@@ -790,45 +781,80 @@
     });
   }
 
-  function fetchAndShowDetail(hotel, ctx, apiUrl) {
+  function fetchAndShowDetail(hotel, ctx) {
     renderDetailLoading();
-    var params = new URLSearchParams({
-      hotel_id:   hotel.id   || '',
-      hotel_code: hotel.hotel_code || '',
-      provider:   hotel.provider   || '',
-      check_in:   ctx.check_in,
-      check_out:  ctx.check_out,
-      adults:     String(ctx.adults  || 2),
-      rooms:      String(ctx.rooms   || 1),
-      currency:   ctx.currency || 'AUD'
-    });
-    fetch(apiUrl + '/mcp/hotel/details?' + params.toString())
-      .then(function(res) {
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        return res.json();
-      })
-      .then(function(detail) { renderDetail(detail); })
-      .catch(function(err) {
-        console.warn('[hotel-widget] detail fetch failed:', err);
-        root.innerHTML = '<div class="state"><p class="state-title">Could not load details</p>'
-          + '<p class="state-sub">Please try again.</p></div>';
-        setTimeout(function() { if (_lastHotels) renderHotels(_lastHotels); }, 2000);
-      });
+
+    var done = false;
+
+    function onGiveUp() {
+      if (done) return;
+      done = true;
+      _onDetailRendered = null;
+      root.innerHTML = '<div class="state">'
+        + '<p class="state-title">View full details</p>'
+        + '<p class="state-sub">Ask the assistant:<br><strong>"Show me details for '
+        + esc(hotel.name || 'this hotel') + '"</strong></p>'
+        + '<button class="btn-details" style="margin-top:16px" id="backToList">\u2190 Back to results</button>'
+        + '</div>';
+      var btn = document.getElementById('backToList');
+      if (btn) btn.addEventListener('click', function () { if (_lastHotels) renderHotels(_lastHotels); });
+    }
+
+    // Cancel the fallback if the tool result arrives via the message listener
+    _onDetailRendered = function () { done = true; };
+
+    // Ask the ChatGPT parent frame to invoke getHotelDetails natively.
+    // The result will arrive via the existing 'message' → tryLoad → renderDetail path.
+    try {
+      window.parent.postMessage({
+        jsonrpc: '2.0',
+        method: 'ui/actions/invoke-tool',
+        params: {
+          name: 'getHotelDetails',
+          arguments: {
+            hotel_id:   String(hotel.id          || ''),
+            hotel_code: String(hotel.hotel_code  || ''),
+            provider:   String(hotel.provider    || ''),
+            check_in:   String(ctx.check_in      || ''),
+            check_out:  String(ctx.check_out     || ''),
+            adults:     Number(ctx.adults        || 2),
+            rooms:      Number(ctx.rooms         || 1),
+            currency:   String(ctx.currency      || 'AUD')
+          }
+        }
+      }, '*');
+    } catch (err) {
+      console.warn('[hotel-widget] postMessage failed:', err);
+    }
+
+    // Show a helpful fallback if the tool call doesn't return within 5 s
+    setTimeout(onGiveUp, 5000);
   }
 
   /* ── Data sources ──────────────────────────────────────────────── */
 
   function tryLoad(data) {
     if (!data) return false;
-    // Detail view
-    if (data.hotel_detail) { renderDetail(data.hotel_detail); return true; }
-    // Hotel list
-    var hotels = data.hotels || (Array.isArray(data) ? data : null);
-    if (hotels) {
-      if (data.context) _context = data.context;
-      if (data.api_url) _apiUrl  = data.api_url;
-      renderHotels(hotels);
-      return true;
+    try {
+      // Detail view
+      if (data.hotel_detail) {
+        if (typeof _onDetailRendered === 'function') { _onDetailRendered(); _onDetailRendered = null; }
+        renderDetail(data.hotel_detail);
+        return true;
+      }
+      // Hotel list
+      var hotels = data.hotels || (Array.isArray(data) ? data : null);
+      if (hotels) {
+        if (data.context) _context = data.context;
+        if (data.api_url) _apiUrl  = data.api_url;
+        renderHotels(hotels);
+        return true;
+      }
+    } catch (err) {
+      console.error('[hotel-widget] render error:', err);
+      root.innerHTML = '<div class="state"><p class="state-title">Display error</p>'
+        + '<p class="state-sub">' + String(err.message || err) + '</p></div>';
+      return true; // stop polling
     }
     return false;
   }
