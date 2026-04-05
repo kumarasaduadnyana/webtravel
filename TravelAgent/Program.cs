@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.HttpOverrides;
 using Travlr.Search.Client;
+using Travlr.Accommodations.Application.Clients.AccommodationApi;
 using TravelAgent.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -31,6 +32,19 @@ builder.Services.AddScoped<ITravlrSearchApiClient>(sp =>
     if (!string.IsNullOrEmpty(apiKey))
         client.SetApiKey(apiKey);
     return client;
+});
+builder.Services.AddHttpClient("Accommodation", client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["AccommodationService:BaseUrl"]
+                                 ?? "https://webapi-accommodation.odin.travlr.com");
+});
+builder.Services.AddScoped<IAccommodationApiClient>(sp =>
+{
+    var factory = sp.GetRequiredService<IHttpClientFactory>();
+    var http = factory.CreateClient("Accommodation");
+    var baseUrl = builder.Configuration["AccommodationService:BaseUrl"]
+                  ?? "https://webapi-accommodation.odin.travlr.com";
+    return new AccommodationApiClient(baseUrl, http);
 });
 builder.Services.AddScoped<IHotelService, HotelService>();
 

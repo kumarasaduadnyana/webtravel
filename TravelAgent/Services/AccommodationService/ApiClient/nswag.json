@@ -1,0 +1,26 @@
+{
+  "runtime": "Net60",
+  "defaultVariables": null,
+  "documentGenerator": {
+    "fromDocument": {
+      "url": "http://localhost:5004/swagger/v1/swagger.json",
+      "output": null,
+      "newLineBehavior": "Auto"
+    }
+  },
+  "codeGenerators": {
+    "openapiToCSharpClient": {
+      "className": "AccommodationApiClient",
+      "namespace": "Travlr.Accommodations.Application.Clients.AccommodationApi",
+      "generateClientClasses": true,
+      "generateClientInterfaces": true,
+      "generateExceptionClasses": true,
+      "generateOptionalParameters": false,
+      "exceptionClass": "AccommodationApiException",
+      "operationGenerationMode": "SingleClientFromOperationId",
+      "dateType": "System.DateTime",
+      "dateTimeType": "System.DateTime",
+      "output": "./AccommodationApiClient.cs"
+    }
+  }
+}

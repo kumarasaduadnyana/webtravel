@@ -15,5 +15,7 @@ namespace TravelAgent.Models
         public string? ImageUrl { get; set; }
         public List<string>? Amenities { get; set; }
         public List<string>? Images { get; set; }
+        public string? HotelCode { get; set; }
+        public string? Provider { get; set; }
     }
 }

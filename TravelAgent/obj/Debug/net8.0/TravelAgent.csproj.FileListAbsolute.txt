@@ -34,3 +34,4 @@ C:\Works\Ai\Mcp\TravelAgent\obj\Debug\net8.0\TravelAgent.sourcelink.json
 C:\Works\Ai\Mcp\TravelAgent\bin\Debug\net8.0\Templates\hotel-widget.html
 C:\Works\Ai\Mcp\TravelAgent\bin\Debug\net8.0\Services\SearchService\ApiClient\nswag.json
 C:\Works\Ai\Mcp\TravelAgent\bin\Debug\net8.0\Newtonsoft.Json.dll
+C:\Works\Ai\Mcp\TravelAgent\bin\Debug\net8.0\Services\AccommodationService\ApiClient\nswag.json
