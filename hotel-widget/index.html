@@ -804,7 +804,7 @@
     _onDetailRendered = function () { done = true; };
 
     // Ask the ChatGPT parent frame to invoke getHotelDetails natively.
-    // The result will arrive via the existing 'message' → tryLoad → renderDetail path.
+    // The result will arrive via the existing 'message' -> tryLoad -> renderDetail path.
     try {
       window.parent.postMessage({
         jsonrpc: '2.0',
