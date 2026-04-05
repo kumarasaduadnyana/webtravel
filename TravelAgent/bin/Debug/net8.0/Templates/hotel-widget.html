@@ -782,53 +782,63 @@
   }
 
   function fetchAndShowDetail(hotel, ctx) {
-    renderDetailLoading();
-
-    var done = false;
-
-    function onGiveUp() {
-      if (done) return;
-      done = true;
-      _onDetailRendered = null;
-      root.innerHTML = '<div class="state">'
-        + '<p class="state-title">View full details</p>'
-        + '<p class="state-sub">Ask the assistant:<br><strong>"Show me details for '
-        + esc(hotel.name || 'this hotel') + '"</strong></p>'
-        + '<button class="btn-details" style="margin-top:16px" id="backToList">\u2190 Back to results</button>'
-        + '</div>';
-      var btn = document.getElementById('backToList');
-      if (btn) btn.addEventListener('click', function () { if (_lastHotels) renderHotels(_lastHotels); });
+    // Phase 1: instant render from search card data
+    var imgs = [];
+    if (hotel.image_url) imgs.push(hotel.image_url);
+    if (hotel.images) {
+      hotel.images.forEach(function(u) { if (u && imgs.indexOf(u) === -1) imgs.push(u); });
     }
+    var cur = (hotel.currency || (ctx && ctx.currency) || 'AUD').toUpperCase();
+    renderDetail({
+      id: hotel.id, name: hotel.name, star_rating: hotel.star_rating,
+      description: null, images: imgs, amenities: hotel.amenities || [],
+      address: hotel.location || null, currency: cur,
+      price: hotel.price || null, room_rates: []
+    });
 
-    // Cancel the fallback if the tool result arrives via the message listener
-    _onDetailRendered = function () { done = true; };
+    // Add a "loading room rates" indicator at the bottom
+    var detailView = root.querySelector('.detail-view');
+    var ratesEl = document.createElement('div');
+    ratesEl.id = 'rates-loading';
+    ratesEl.innerHTML = '<div style="text-align:center;padding:16px 16px 8px">'
+      + '<div class="spinner" style="width:20px;height:20px;border-width:2px;margin:0 auto 8px"></div>'
+      + '<p style="font-size:0.78rem;color:#888">Loading room rates\u2026</p></div>';
+    if (detailView) detailView.appendChild(ratesEl);
 
-    // Ask the ChatGPT parent frame to invoke getHotelDetails natively.
-    // The result will arrive via the existing 'message' -> tryLoad -> renderDetail path.
-    try {
-      window.parent.postMessage({
-        jsonrpc: '2.0',
-        method: 'ui/actions/invoke-tool',
-        params: {
-          name: 'getHotelDetails',
-          arguments: {
-            hotel_id:   String(hotel.id          || ''),
-            hotel_code: String(hotel.hotel_code  || ''),
-            provider:   String(hotel.provider    || ''),
-            check_in:   String(ctx.check_in      || ''),
-            check_out:  String(ctx.check_out     || ''),
-            adults:     Number(ctx.adults        || 2),
-            rooms:      Number(ctx.rooms         || 1),
-            currency:   String(ctx.currency      || 'AUD')
-          }
-        }
-      }, '*');
-    } catch (err) {
-      console.warn('[hotel-widget] postMessage failed:', err);
+    // Phase 2: fetch full details in the background
+    if (_apiUrl && ctx) {
+      var params = new URLSearchParams({
+        hotel_id:   hotel.id         || '',
+        hotel_code: hotel.hotel_code || '',
+        provider:   hotel.provider   || '',
+        check_in:   ctx.check_in     || '',
+        check_out:  ctx.check_out    || '',
+        adults:     String(ctx.adults  || 2),
+        rooms:      String(ctx.rooms   || 1),
+        currency:   ctx.currency      || 'AUD'
+      });
+      fetch(_apiUrl + '/mcp/hotel/details?' + params.toString())
+        .then(function(res) {
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          return res.json();
+        })
+        .then(function(detail) {
+          // Full detail arrived — replace the whole view
+          renderDetail(detail);
+        })
+        .catch(function(err) {
+          console.warn('[hotel-widget] detail fetch failed:', err);
+          // Fetch blocked or errored — swap loading spinner for a text hint
+          var el = document.getElementById('rates-loading');
+          if (el) el.innerHTML = '<p style="color:#888;font-size:0.78rem;text-align:center;padding:8px 16px 12px">'
+            + 'Ask the assistant: <strong>"Show room rates for ' + esc(hotel.name || 'this hotel') + '"</strong></p>';
+        });
+    } else {
+      // No API URL available
+      var el = document.getElementById('rates-loading');
+      if (el) el.innerHTML = '<p style="color:#888;font-size:0.78rem;text-align:center;padding:8px 16px 12px">'
+        + 'Ask the assistant: <strong>"Show room rates for ' + esc(hotel.name || 'this hotel') + '"</strong></p>';
     }
-
-    // Show a helpful fallback if the tool call doesn't return within 5 s
-    setTimeout(onGiveUp, 5000);
   }
 
   /* ── Data sources ──────────────────────────────────────────────── */

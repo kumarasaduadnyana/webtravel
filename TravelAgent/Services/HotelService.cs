@@ -214,8 +214,13 @@ namespace TravelAgent.Services
                 CustomerSessionId = Guid.NewGuid().ToString("N")[..20]
             };
 
-            if (int.TryParse(hotelId, out var propertyId))
+            // AvailabilityPropertyId (hotelCode) is the integer provider property ID;
+            // ContentItemId (hotelId) is a content-store string — try hotelCode first.
+            if (int.TryParse(hotelCode, out var propertyId) ||
+                int.TryParse(hotelId,   out propertyId))
+            {
                 singleParams.PropertyId = propertyId;
+            }
 
             HotelSingleResult result;
             try
@@ -264,7 +269,7 @@ namespace TravelAgent.Services
                     RoomName = r.RoomName,
                     RoomType = r.RoomType,
                     ImageUrl = r.Images?.FirstOrDefault()?.Url,
-                    BedConfiguration = bedConfig,
+                    BedConfiguration = bedConfig?.ToString(),
                     MealsDescription = mealDesc,
                     Refundable = r.Refundable,
                     FreeCancellationUntil = r.FreeCancellation?.IsFree == true ? r.FreeCancellation.EndDate : null,

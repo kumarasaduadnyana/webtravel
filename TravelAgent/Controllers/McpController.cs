@@ -395,12 +395,11 @@ namespace TravelAgent.Controllers
                 if (roomValue.ValueKind == JsonValueKind.Number)
                     rooms = roomValue.GetInt32();
 
-                if (currencyValue.ValueKind == JsonValueKind.Undefined)
-                {
-                    currency = DefaultCurrency;
-                }
+                if (currencyValue.ValueKind == JsonValueKind.String)
+                    currency = currencyValue.GetString() ?? DefaultCurrency;
                 
-                sortBy = sortByValue.GetString();
+                if (sortByValue.ValueKind == JsonValueKind.String)
+                    sortBy = sortByValue.GetString();
 
                 if (minStarsValue.ValueKind == JsonValueKind.Number)
                 {
@@ -465,6 +464,7 @@ namespace TravelAgent.Controllers
                     strike_through_price = x?.StrikeThroughPrice ?? 0,
                     currency = x?.Currency ?? string.Empty,
                     image_url = imageUrl,
+                    images = x?.Images ?? new List<string>(),
                     amenities = x?.Amenities ?? new List<string>(),
                     hotel_code = x?.HotelCode ?? string.Empty,
                     provider = x?.Provider ?? string.Empty
@@ -482,7 +482,9 @@ namespace TravelAgent.Controllers
             var dataBase64 = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(dataJson));
             var widgetLink = $"{widgetUrl.TrimEnd('/')}/?data={dataBase64}";
 
-            var responseText = $"## Hotels in {destination}\n\n{hotels}\n\n[View full hotel cards]({widgetLink})";
+            var hotelList = string.Join("\n", hotelResults.Select((h, i) =>
+                $"{i + 1}. {h.name} (id:{h.id}, code:{h.hotel_code}, provider:{h.provider}) — {h.currency} {h.price:F0}/night, {h.star_rating}\u2605"));
+            var responseText = $"## Hotels in {destination}\n\n{hotelList}\n\nCheck-in: {checkInDate}, Check-out: {checkOutDate}, Adults: {adults}, Rooms: {rooms}, Currency: {currency}\n\n[View full hotel cards]({widgetLink})";
 
             return Ok(new
             {
@@ -563,6 +565,36 @@ namespace TravelAgent.Controllers
             if (detail == null)
                 return Ok(JsonRpcError(requestId, -32603, "Hotel details not found"));
 
+            // Map to snake_case anonymous type so the JS widget (which uses d.star_rating,
+            // d.room_rates, etc.) receives correctly named properties.
+            var detailPayload = new
+            {
+                id          = detail.Id,
+                name        = detail.Name,
+                star_rating = detail.StarRating,
+                description = detail.Description,
+                images      = detail.Images,
+                amenities   = detail.Amenities,
+                address     = detail.Address,
+                latitude    = detail.Latitude,
+                longitude   = detail.Longitude,
+                currency    = detail.Currency,
+                price       = detail.Price,
+                room_rates  = detail.RoomRates?.Select(r => new
+                {
+                    room_name               = r.RoomName,
+                    room_type               = r.RoomType,
+                    image_url               = r.ImageUrl,
+                    bed_configuration       = r.BedConfiguration,
+                    meals_description       = r.MealsDescription,
+                    refundable              = r.Refundable,
+                    free_cancellation_until = r.FreeCancellationUntil,
+                    price                   = r.Price,
+                    strike_through_price    = r.StrikeThroughPrice,
+                    currency                = r.Currency
+                }).ToList()
+            };
+
             return Ok(new
             {
                 jsonrpc = "2.0",
@@ -570,7 +602,7 @@ namespace TravelAgent.Controllers
                 result = new
                 {
                     content = new[] { new { type = "text", text = $"Hotel details for {detail.Name}" } },
-                    structuredContent = new { hotel_detail = detail },
+                    structuredContent = new { hotel_detail = detailPayload },
                     _meta = new Dictionary<string, object>
                     {
                         ["openai/outputTemplate"]          = WidgetUri,
