@@ -160,16 +160,6 @@
     .price-block {
       text-align: left;
     }
-    .price-strike {
-      font-size: 0.72rem;
-      color: #aaa;
-      text-decoration: line-through;
-    }
-    .price-supplier {
-      font-size: 0.88rem;
-      color: #333;
-      font-weight: 600;
-    }
     .price-main {
       font-size: 1.1rem;
       font-weight: 800;
@@ -238,8 +228,8 @@
     .score-label { color: #444; }
     .score-count { color: #999; }
 
-    /* book button — teal, full width */
-    .btn-book {
+    /* single action button — teal, full width */
+    .btn-details {
       width: 100%;
       background: #00bfbf;
       color: #fff;
@@ -252,7 +242,153 @@
       letter-spacing: 0.02em;
       transition: background 0.15s;
     }
-    .btn-book:hover { background: #009e9e; }
+    .btn-details:hover { background: #009e9e; }
+
+    /* ── Detail view ────────────────────────────────────────────── */
+    .detail-view { display: flex; flex-direction: column; gap: 16px; }
+
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: none;
+      border: none;
+      color: #00bfbf;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 0;
+      margin-bottom: 2px;
+    }
+    .back-btn:hover { text-decoration: underline; }
+
+    .detail-gallery {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 100px 100px;
+      gap: 4px;
+      border-radius: 10px;
+      overflow: hidden;
+      height: 204px;
+    }
+    .detail-gallery .gal-main {
+      grid-row: 1 / 3;
+      position: relative;
+      background: #e8f0f0;
+    }
+    .detail-gallery .gal-thumb {
+      position: relative;
+      background: #e8f0f0;
+    }
+    .detail-gallery img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .gal-placeholder { width: 100%; height: 100%; background: #e0ecec; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; }
+
+    .detail-header { display: flex; flex-direction: column; gap: 4px; }
+    .detail-name { font-size: 1.05rem; font-weight: 800; color: #111; line-height: 1.3; }
+    .detail-addr { font-size: 0.73rem; color: #777; display: flex; align-items: center; gap: 3px; }
+
+    .detail-price-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #f7fefe;
+      border: 1px solid #d4f0f0;
+      border-radius: 10px;
+      padding: 10px 14px;
+    }
+    .detail-price-label { font-size: 0.68rem; color: #888; margin-bottom: 2px; }
+    .detail-price-main { font-size: 1.1rem; font-weight: 800; color: #111; }
+    .detail-price-tax { font-size: 0.67rem; color: #22a06b; margin-top: 2px; }
+    .btn-select {
+      background: #00bfbf;
+      color: #fff;
+      border: none;
+      border-radius: 50px;
+      padding: 9px 18px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .btn-select:hover { background: #009e9e; }
+
+    .detail-desc { font-size: 0.78rem; color: #444; line-height: 1.6; }
+
+    .section-title { font-size: 0.88rem; font-weight: 700; color: #111; margin-bottom: 8px; }
+
+    .amenity-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 16px;
+    }
+    .amenity-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.74rem;
+      color: #333;
+    }
+    .amenity-icon { font-size: 1rem; flex-shrink: 0; }
+
+    /* Room list */
+    .room-group {
+      border: 1px solid #e4e4e4;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 10px;
+    }
+    .room-group-header {
+      display: flex;
+      gap: 10px;
+      padding: 10px 12px;
+      background: #fafafa;
+      border-bottom: 1px solid #eee;
+    }
+    .room-thumb {
+      width: 64px; height: 52px;
+      border-radius: 6px;
+      object-fit: cover;
+      flex-shrink: 0;
+      background: #e8f0f0;
+    }
+    .room-thumb-placeholder { width: 64px; height: 52px; border-radius: 6px; background: #e0ecec; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
+    .room-group-info { flex: 1; min-width: 0; }
+    .room-group-name { font-size: 0.82rem; font-weight: 700; color: #111; text-transform: uppercase; letter-spacing: 0.02em; }
+    .room-group-bed { font-size: 0.7rem; color: #666; margin-top: 3px; }
+
+    .rate-option {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      border-top: 1px solid #f0f0f0;
+      gap: 8px;
+    }
+    .rate-option:first-of-type { border-top: none; }
+    .rate-info { flex: 1; min-width: 0; }
+    .rate-cancel { font-size: 0.7rem; font-weight: 600; color: #22a06b; margin-bottom: 3px; }
+    .rate-cancel.non-refundable { color: #d64545; }
+    .rate-meals { font-size: 0.7rem; color: #555; }
+    .rate-price-col { text-align: right; flex-shrink: 0; }
+    .rate-strike { font-size: 0.68rem; color: #aaa; text-decoration: line-through; }
+    .rate-price { font-size: 0.95rem; font-weight: 800; color: #111; }
+    .rate-nights { font-size: 0.65rem; color: #888; }
+    .btn-book-sm {
+      background: #00bfbf;
+      color: #fff;
+      border: none;
+      border-radius: 50px;
+      padding: 7px 14px;
+      font-size: 0.74rem;
+      font-weight: 700;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .btn-book-sm:hover { background: #009e9e; }
 
     /* ── States ──────────────────────────────────────────────────── */
     .state {
@@ -358,27 +494,23 @@
 
   function renderHotels(hotels) {
     if (!hotels || hotels.length === 0) { renderEmpty(); return; }
+    _lastHotels = hotels;
     console.log('[hotel-widget] first hotel:', JSON.stringify(hotels[0], null, 2));
 
     var location = hotels[0].location || '';
     var count    = hotels.length;
 
-    var cards = hotels.map(function (h) {
+    var cards = hotels.map(function (h, idx) {
       var imgUrl = resolveImage(h);
       var imgHtml = imgUrl
         ? '<img src="' + esc(imgUrl) + '" alt="' + esc(h.name) + '" onerror="console.warn(\'img failed:\',this.src);this.style.display=\'none\'">'
         : '&#x1F3DD;';
 
       var cur = (h.currency || 'AUD').toUpperCase();
-      var priceMain     = fmtPrice(h.price, cur);
-      var priceSupplier = fmtPrice(h.supplier_price, cur);
-      var priceStrike   = fmtPrice(h.strike_through_price, cur);
+      var priceMain = fmtPrice(h.price, cur);
 
       var priceHtml = '';
-      if (priceStrike)   priceHtml += '<div class="price-strike">' + esc(priceStrike) + '</div>';
-      if (priceSupplier && priceSupplier !== priceMain)
-                         priceHtml += '<div class="price-supplier">' + esc(priceSupplier) + '</div>';
-      if (priceMain)     priceHtml += '<div class="price-main">' + esc(priceMain) + '</div>';
+      if (priceMain) priceHtml += '<div class="price-main">' + esc(priceMain) + '</div>';
       priceHtml += '<div class="price-meta">1 room, 1 night</div>';
       priceHtml += '<div class="price-tax">' + CHECK + '&nbsp;Taxes and fees included</div>';
 
@@ -418,7 +550,7 @@
         // bottom: stars + score + button
         + '<div class="card-bottom">'
           + '<div class="rating-row">' + ratingHtml + scoreHtml + '</div>'
-          + '<button class="btn-book">Book Now</button>'
+          + '<button class="btn-details" data-idx="' + idx + '">View Details</button>'
         + '</div>'
 
         + '</div></div>';
@@ -440,6 +572,27 @@
       + '<div class="dots" id="dots">' + dotHtml + '</div>';
 
     initCarousel();
+
+    // Wire up "View Details" buttons via event delegation
+    document.getElementById('carousel').addEventListener('click', function(e) {
+      var btn = e.target.closest('.btn-details');
+      if (!btn) return;
+      var idx = parseInt(btn.getAttribute('data-idx'), 10);
+      var hotel = hotels[idx];
+      if (!hotel) return;
+      var ctx = _context || { check_in: '', check_out: '', adults: 2, rooms: 1, currency: 'AUD' };
+      if (_apiUrl) {
+        fetchAndShowDetail(hotel, ctx, _apiUrl);
+      } else {
+        // No API URL — prompt user to ask the AI for details
+        root.innerHTML = '<div class="state">'
+          + '<p class="state-title">Ask for details</p>'
+          + '<p class="state-sub">Ask the assistant: "Show me details for ' + esc(hotel.name || 'this hotel') + '"</p>'
+          + '<button class="btn-book" style="margin-top:12px;width:auto;padding:9px 20px" id="backToList">Back to results</button>'
+          + '</div>';
+        document.getElementById('backToList').addEventListener('click', function() { renderHotels(hotels); });
+      }
+    });
   }
 
   function initCarousel() {
@@ -492,12 +645,190 @@
     updateUI();
   }
 
+  /* ── Global state ──────────────────────────────────────────────── */
+  var _context = null;   // { check_in, check_out, adults, rooms, currency }
+  var _apiUrl  = null;   // backend base URL
+  var _lastHotels = null;
+
+  /* ── Amenity icon map ──────────────────────────────────────────── */
+  var AMENITY_ICONS = {
+    'wifi': '📶', 'wi-fi': '📶', 'internet': '📶',
+    'pool': '🏊', 'swimming': '🏊',
+    'spa': '💆', 'gym': '🏋️', 'fitness': '🏋️',
+    'restaurant': '🍽️', 'dining': '🍽️',
+    'bar': '🍸', 'breakfast': '☕',
+    'parking': '🅿️', 'airport': '✈️',
+    'room service': '🛎️', 'concierge': '🛎️',
+    'pet': '🐾', 'garden': '🌿', 'beach': '🏖️'
+  };
+
+  function amenityIcon(name) {
+    var lower = (name || '').toLowerCase();
+    for (var key in AMENITY_ICONS) {
+      if (lower.indexOf(key) !== -1) return AMENITY_ICONS[key];
+    }
+    return '✓';
+  }
+
+  /* ── Detail view ──────────────────────────────────────────────── */
+
+  function renderDetailLoading() {
+    root.innerHTML = '<div class="state"><div class="spinner"></div>'
+      + '<p class="state-sub">Loading hotel details\u2026</p></div>';
+  }
+
+  function renderDetail(d) {
+    var imgs = d.images || [];
+    var galleryHtml = '<div class="detail-gallery">';
+    galleryHtml += '<div class="gal-main">'
+      + (imgs[0] ? '<img src="' + esc(imgs[0]) + '" alt="" onerror="this.style.display=\'none\'">'
+                 : '<div class="gal-placeholder">🏨</div>')
+      + '</div>';
+    galleryHtml += '<div class="gal-thumb">'
+      + (imgs[1] ? '<img src="' + esc(imgs[1]) + '" alt="" onerror="this.style.display=\'none\'">'
+                 : '<div class="gal-placeholder">🌅</div>')
+      + '</div>';
+    galleryHtml += '<div class="gal-thumb">'
+      + (imgs[2] ? '<img src="' + esc(imgs[2]) + '" alt="" onerror="this.style.display=\'none\'">'
+                 : '<div class="gal-placeholder">🛏️</div>')
+      + '</div>';
+    galleryHtml += '</div>';
+
+    var cur = (d.currency || 'AUD').toUpperCase();
+    var priceStr = d.price ? fmtPrice(d.price, cur) : null;
+
+    var priceBar = priceStr
+      ? '<div class="detail-price-bar">'
+        + '<div><div class="detail-price-label">From per night</div>'
+        + '<div class="detail-price-main">' + esc(priceStr) + '</div>'
+        + '<div class="detail-price-tax">✓&nbsp;Taxes and fees included</div></div>'
+        + '<button class="btn-select" onclick="document.getElementById(\'rooms-section\').scrollIntoView({behavior:\'smooth\'})">Select Room</button>'
+        + '</div>'
+      : '';
+
+    var amenitiesHtml = '';
+    if (d.amenities && d.amenities.length) {
+      amenitiesHtml = '<div>'
+        + '<div class="section-title">Popular Amenities</div>'
+        + '<div class="amenity-grid">'
+        + d.amenities.slice(0, 8).map(function(a) {
+            return '<div class="amenity-item"><span class="amenity-icon">' + amenityIcon(a) + '</span><span>' + esc(a) + '</span></div>';
+          }).join('')
+        + '</div></div>';
+    }
+
+    // Room rates grouped by room type
+    var roomGroups = {};
+    (d.room_rates || []).forEach(function(r) {
+      var key = r.room_name || r.room_type || 'Standard Room';
+      if (!roomGroups[key]) roomGroups[key] = { info: r, rates: [] };
+      roomGroups[key].rates.push(r);
+    });
+
+    var roomsHtml = '';
+    Object.keys(roomGroups).forEach(function(key) {
+      var g = roomGroups[key];
+      var r0 = g.info;
+      var thumbHtml = r0.image_url
+        ? '<img class="room-thumb" src="' + esc(r0.image_url) + '" alt="" onerror="this.style.display=\'none\'">'
+        : '<div class="room-thumb-placeholder">🛏️</div>';
+
+      roomsHtml += '<div class="room-group">';
+      roomsHtml += '<div class="room-group-header">'
+        + thumbHtml
+        + '<div class="room-group-info">'
+        + '<div class="room-group-name">' + esc(key) + '</div>'
+        + (r0.bed_configuration ? '<div class="room-group-bed">🛏 ' + esc(r0.bed_configuration) + '</div>' : '')
+        + '</div></div>';
+
+      g.rates.forEach(function(rate) {
+        var rateCur = (rate.currency || cur).toUpperCase();
+        var cancelClass = rate.refundable ? 'rate-cancel' : 'rate-cancel non-refundable';
+        var cancelText = rate.refundable
+          ? (rate.free_cancellation_until
+              ? 'Free cancellation before ' + new Date(rate.free_cancellation_until).toLocaleDateString('en-AU', { day:'2-digit', month:'short', year:'numeric' })
+              : 'Free cancellation')
+          : 'Non-refundable';
+
+        var strikePriceHtml = rate.strike_through_price
+          ? '<div class="rate-strike">' + esc(fmtPrice(rate.strike_through_price, rateCur)) + '</div>' : '';
+        var priceHtml2 = '<div class="rate-price">' + esc(fmtPrice(rate.price, rateCur)) + '</div>'
+          + '<div class="rate-nights">total for 1 night</div>';
+
+        roomsHtml += '<div class="rate-option">'
+          + '<div class="rate-info">'
+          + '<div class="' + cancelClass + '">' + esc(cancelText) + '</div>'
+          + '<div class="rate-meals">☑ ' + esc(rate.meals_description || 'Meals not included') + '</div>'
+          + '</div>'
+          + '<div class="rate-price-col">' + strikePriceHtml + priceHtml2 + '</div>'
+          + '<button class="btn-book-sm">Book Now</button>'
+          + '</div>';
+      });
+
+      roomsHtml += '</div>';
+    });
+
+    var html = '<div class="detail-view">'
+      + '<button class="back-btn" id="backBtn">&#8592; Back to results</button>'
+      + galleryHtml
+      + '<div class="detail-header">'
+      + '<div class="detail-name">' + esc(d.name || 'Hotel') + '</div>'
+      + (starHtml(d.star_rating || 0))
+      + (d.address ? '<div class="detail-addr">' + PIN + '&nbsp;' + esc(d.address) + '</div>' : '')
+      + '</div>'
+      + priceBar
+      + (d.description ? '<div class="detail-desc">' + esc(d.description) + '</div>' : '')
+      + amenitiesHtml
+      + (roomsHtml ? '<div id="rooms-section"><div class="section-title">Choose your room</div>' + roomsHtml + '</div>' : '')
+      + '</div>';
+
+    root.innerHTML = html;
+
+    document.getElementById('backBtn').addEventListener('click', function() {
+      if (_lastHotels) renderHotels(_lastHotels);
+    });
+  }
+
+  function fetchAndShowDetail(hotel, ctx, apiUrl) {
+    renderDetailLoading();
+    var params = new URLSearchParams({
+      hotel_id:   hotel.id   || '',
+      hotel_code: hotel.hotel_code || '',
+      provider:   hotel.provider   || '',
+      check_in:   ctx.check_in,
+      check_out:  ctx.check_out,
+      adults:     String(ctx.adults  || 2),
+      rooms:      String(ctx.rooms   || 1),
+      currency:   ctx.currency || 'AUD'
+    });
+    fetch(apiUrl + '/mcp/hotel/details?' + params.toString())
+      .then(function(res) {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+      })
+      .then(function(detail) { renderDetail(detail); })
+      .catch(function(err) {
+        console.warn('[hotel-widget] detail fetch failed:', err);
+        root.innerHTML = '<div class="state"><p class="state-title">Could not load details</p>'
+          + '<p class="state-sub">Please try again.</p></div>';
+        setTimeout(function() { if (_lastHotels) renderHotels(_lastHotels); }, 2000);
+      });
+  }
+
   /* ── Data sources ──────────────────────────────────────────────── */
 
   function tryLoad(data) {
     if (!data) return false;
+    // Detail view
+    if (data.hotel_detail) { renderDetail(data.hotel_detail); return true; }
+    // Hotel list
     var hotels = data.hotels || (Array.isArray(data) ? data : null);
-    if (hotels) { renderHotels(hotels); return true; }
+    if (hotels) {
+      if (data.context) _context = data.context;
+      if (data.api_url) _apiUrl  = data.api_url;
+      renderHotels(hotels);
+      return true;
+    }
     return false;
   }
 

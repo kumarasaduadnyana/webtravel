@@ -161,6 +161,14 @@ namespace TravelAgent.Controllers
                                         description = "Minimum guest rating score (0–100). E.g. 80 for 'Excellent' and above.",
                                         minimum = 0,
                                         maximum = 100
+                                    },
+                                    count = new
+                                    {
+                                        type = "integer",
+                                        description = "Number of hotels to return (1–10, default 5).",
+                                        minimum = 1,
+                                        maximum = 10,
+                                        @default = 5
                                     }
                                 },
                                 // required property must contain on prompt, is don't then response will ask about it
@@ -356,6 +364,7 @@ namespace TravelAgent.Controllers
             int[]? starRatings = null;
             double? maxPrice = null;
             int? minRating = null;
+            var count = 5;
 
             var paramFromPrompt = paramsRoot.TryGetProperty("arguments", out var promptRequest);
             if (!string.IsNullOrEmpty(paramFromPrompt.ToString()))
@@ -381,7 +390,11 @@ namespace TravelAgent.Controllers
                 if (roomValue.ValueKind == JsonValueKind.Number)
                     rooms = roomValue.GetInt32();
 
-                currency = currencyValue.GetString() ?? DefaultCurrency;
+                if (currencyValue.ValueKind == JsonValueKind.Undefined)
+                {
+                    currency = DefaultCurrency;
+                }
+                
                 sortBy = sortByValue.GetString();
 
                 if (minStarsValue.ValueKind == JsonValueKind.Number)
@@ -395,6 +408,10 @@ namespace TravelAgent.Controllers
 
                 if (minRatingValue.ValueKind == JsonValueKind.Number)
                     minRating = minRatingValue.GetInt32();
+
+                promptRequest.TryGetProperty("count", out var countValue);
+                if (countValue.ValueKind == JsonValueKind.Number)
+                    count = Math.Clamp(countValue.GetInt32(), 1, 10);
             }
 
             // required value for search destination
@@ -417,7 +434,7 @@ namespace TravelAgent.Controllers
                 sortBy, starRatings, maxPrice, minRating);
 
             var httpClient = _httpClientFactory.CreateClient("ImageProxy");
-            var hotelResults = await Task.WhenAll(hotels.Take(10).Select(async x =>
+            var hotelResults = await Task.WhenAll(hotels.Take(count).Select(async x =>
             {
                 // Fetch images as base64 data URIs — required because ChatGPT's iframe
                 // CSP only allows img-src 'self' data:, blocking external CDN URLs.
@@ -659,6 +676,11 @@ namespace TravelAgent.Controllers
 
         private async Task<string> FormattedImageUrl(string rawrlUrl, HttpClient httpClient, ILogger logger, int timeSeconds = 8)
         {
+            if (string.IsNullOrWhiteSpace(rawrlUrl))
+                return string.Empty;
+
+            logger.LogInformation("Fetching image: {Url}", rawrlUrl);
+
             var preferredUrl = Regex.Replace(rawrlUrl, @"_[a-z](\.[a-z]+)$", "_b$1");
             var imageSelected = preferredUrl != rawrlUrl
                 ? new[] { preferredUrl, rawrlUrl }
@@ -669,7 +691,13 @@ namespace TravelAgent.Controllers
                 try
                 {
                     var cts = new CancellationTokenSource(TimeSpan.FromSeconds(timeSeconds));
-                    var response = await httpClient.GetAsync(url, cts.Token);
+
+                    // Some CDNs require a Referer to serve images
+                    var reqMsg = new HttpRequestMessage(HttpMethod.Get, url);
+                    if (Uri.TryCreate(url, UriKind.Absolute, out var uri))
+                        reqMsg.Headers.Referrer = new Uri($"{uri.Scheme}://{uri.Host}/");
+
+                    var response = await httpClient.SendAsync(reqMsg, cts.Token);
 
                     if (!response.IsSuccessStatusCode)
                     {

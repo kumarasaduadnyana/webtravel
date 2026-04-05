@@ -65,8 +65,8 @@ namespace TravelAgent.Services
                 _logger.LogWarning("Destination resolution failed — status {Status}, response: [{Response}] — using raw input", ex.StatusCode, ex.Response);
             }
 
-            // Build API sort and filters from caller parameters
-            var apiSorts  = BuildSorts(sortBy);
+            // Build filters for the API; sort is applied client-side only
+            // (API sort field names are not guaranteed, so we don't pass them to avoid search failures)
             var apiFilter = BuildFilters(starRatings, maxPrice, amenities);
 
             try
@@ -83,7 +83,6 @@ namespace TravelAgent.Services
                         GetComparisonPrice = true,
                         IncludeFacets = true,
                         Tags = new[] { "webapp_search" },
-                        Sorts = apiSorts,
                         Filters = new AccommodationSearchByDestinationRequestViewModel_Filters
                         {
                             HasRoomAvailabilityOnly = true,
@@ -132,7 +131,6 @@ namespace TravelAgent.Services
                         GetComparisonPrice = true,
                         IncludeFacets = true,
                         Tags = new[] { "webapp_search" },
-                        Sorts = apiSorts,
                         Filters = new AccommodationSearchByDestinationRequestViewModel_Filters
                         {
                             StarRatings = apiFilter.starRatings,
@@ -153,23 +151,6 @@ namespace TravelAgent.Services
         }
 
         // ── Sort / filter helpers ──────────────────────────────────────
-
-        private static ICollection<AccommodationSearchByDestinationRequestViewModel_Sort>? BuildSorts(string? sortBy)
-        {
-            // Map caller-friendly sort names → API sort fields
-            return sortBy switch
-            {
-                "cheapest"       => Sorts("CurrentCheapestPrice", SearchSortOrderEnum.Ascending),
-                "most_expensive" => Sorts("CurrentCheapestPrice", SearchSortOrderEnum.Descending),
-                "best_rated"     => Sorts("GuestRating",          SearchSortOrderEnum.Descending),
-                "top_stars"      => Sorts("StarRating",           SearchSortOrderEnum.Descending),
-                "popular"        => Sorts("Popularity",           SearchSortOrderEnum.Descending),
-                _                => null   // default / recommended — let the API decide
-            };
-
-            static ICollection<AccommodationSearchByDestinationRequestViewModel_Sort> Sorts(string title, SearchSortOrderEnum order) =>
-                new[] { new AccommodationSearchByDestinationRequestViewModel_Sort { Title = title, Order = order } };
-        }
 
         private static (ICollection<int>? starRatings, ICollection<string>? amenities,
             AccommodationSearchByDestinationRequestViewModel_PriceRange? priceRange)
