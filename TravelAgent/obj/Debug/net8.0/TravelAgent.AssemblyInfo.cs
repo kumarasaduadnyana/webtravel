@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("TravelAgent")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+867188dd29047c698f094c863049ecb978a5704c")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+33bb37f2881536b0df46c2f8cf80d4b6f3d7f349")]
 [assembly: System.Reflection.AssemblyProductAttribute("TravelAgent")]
 [assembly: System.Reflection.AssemblyTitleAttribute("TravelAgent")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
