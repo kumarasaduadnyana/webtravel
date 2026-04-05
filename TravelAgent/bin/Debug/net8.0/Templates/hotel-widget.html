@@ -271,10 +271,17 @@
       overflow: hidden;
       height: 204px;
     }
+    .detail-gallery.single-img {
+      grid-template-columns: 1fr;
+    }
     .detail-gallery .gal-main {
       grid-row: 1 / 3;
       position: relative;
       background: #e8f0f0;
+    }
+    .detail-gallery.single-img .gal-main {
+      grid-row: 1 / 3;
+      grid-column: 1 / 2;
     }
     .detail-gallery .gal-thumb {
       position: relative;
@@ -671,19 +678,15 @@
 
   function renderDetail(d) {
     var imgs = d.images || [];
-    var galleryHtml = '<div class="detail-gallery">';
+    var hasThumb = imgs.length > 1;
+    var galleryClass = hasThumb ? 'detail-gallery' : 'detail-gallery single-img';
+    var galleryHtml = '<div class="' + galleryClass + '">';
     galleryHtml += '<div class="gal-main">'
       + (imgs[0] ? '<img src="' + esc(imgs[0]) + '" alt="" onerror="this.style.display=\'none\'">'
-                 : '<div class="gal-placeholder">🏨</div>')
+                 : '<div class="gal-placeholder">\uD83C\uDFE8</div>')
       + '</div>';
-    galleryHtml += '<div class="gal-thumb">'
-      + (imgs[1] ? '<img src="' + esc(imgs[1]) + '" alt="" onerror="this.style.display=\'none\'">'
-                 : '<div class="gal-placeholder">🌅</div>')
-      + '</div>';
-    galleryHtml += '<div class="gal-thumb">'
-      + (imgs[2] ? '<img src="' + esc(imgs[2]) + '" alt="" onerror="this.style.display=\'none\'">'
-                 : '<div class="gal-placeholder">🛏️</div>')
-      + '</div>';
+    if (imgs[1]) galleryHtml += '<div class="gal-thumb"><img src="' + esc(imgs[1]) + '" alt="" onerror="this.style.display=\'none\'"></div>';
+    if (imgs[2]) galleryHtml += '<div class="gal-thumb"><img src="' + esc(imgs[2]) + '" alt="" onerror="this.style.display=\'none\'"></div>';
     galleryHtml += '</div>';
 
     var cur = (d.currency || 'AUD').toUpperCase();
@@ -805,7 +808,26 @@
       + '<p style="font-size:0.78rem;color:#888">Loading room rates\u2026</p></div>';
     if (detailView) detailView.appendChild(ratesEl);
 
-    // Phase 2: fetch full details in the background
+    // Phase 2a: try triggering getHotelDetails via postMessage (like Booking.com does).
+    // Multiple format attempts since OpenAI hasn't published the exact spec.
+    var toolArgs = {
+      hotel_id:   String(hotel.id         || ''),
+      hotel_code: String(hotel.hotel_code || ''),
+      provider:   String(hotel.provider   || ''),
+      check_in:   String(ctx && ctx.check_in  || ''),
+      check_out:  String(ctx && ctx.check_out || ''),
+      adults:     Number(ctx && ctx.adults    || 2),
+      rooms:      Number(ctx && ctx.rooms     || 1),
+      currency:   String(ctx && ctx.currency  || 'AUD')
+    };
+    var toolMsg = {
+      jsonrpc: '2.0',
+      method: 'ui/actions/invoke-tool',
+      params: { name: 'getHotelDetails', arguments: toolArgs }
+    };
+    try { window.parent.postMessage(toolMsg, '*'); } catch (_) {}
+
+    // Phase 2b: also try a direct fetch (works if CSP allows connect-src to our server)
     if (_apiUrl && ctx) {
       var params = new URLSearchParams({
         hotel_id:   hotel.id         || '',
@@ -823,21 +845,19 @@
           return res.json();
         })
         .then(function(detail) {
-          // Full detail arrived — replace the whole view
           renderDetail(detail);
         })
-        .catch(function(err) {
-          console.warn('[hotel-widget] detail fetch failed:', err);
-          // Fetch blocked or errored — swap loading spinner for a text hint
+        .catch(function() {
           var el = document.getElementById('rates-loading');
           if (el) el.innerHTML = '<p style="color:#888;font-size:0.78rem;text-align:center;padding:8px 16px 12px">'
-            + 'Ask the assistant: <strong>"Show room rates for ' + esc(hotel.name || 'this hotel') + '"</strong></p>';
+            + 'Ask the assistant:<br><strong>"Show details for ' + esc(hotel.name || 'this hotel')
+            + ', hotel id: ' + esc(String(hotel.id || '')) + '"</strong></p>';
         });
     } else {
-      // No API URL available
       var el = document.getElementById('rates-loading');
       if (el) el.innerHTML = '<p style="color:#888;font-size:0.78rem;text-align:center;padding:8px 16px 12px">'
-        + 'Ask the assistant: <strong>"Show room rates for ' + esc(hotel.name || 'this hotel') + '"</strong></p>';
+        + 'Ask the assistant:<br><strong>"Show details for ' + esc(hotel.name || 'this hotel')
+        + ', hotel id: ' + esc(String(hotel.id || '')) + '"</strong></p>';
     }
   }
 
