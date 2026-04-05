@@ -440,16 +440,28 @@ namespace TravelAgent.Controllers
             var httpClient = _httpClientFactory.CreateClient("ImageProxy");
             var hotelResults = await Task.WhenAll(hotels.Take(count).Select(async x =>
             {
-                // Fetch images as base64 data URIs — required because ChatGPT's iframe
-                // CSP only allows img-src 'self' data:, blocking external CDN URLs.
-                var imageUrl = string.Empty;
-                var rawUrl = x?.ImageUrl ?? string.Empty;
-                var formattedUrl = await FormattedImageUrl(rawUrl, httpClient, _logger);
+                // Run image fetch and detail fetch in parallel for each hotel.
+                var imageTask = FormattedImageUrl(x?.ImageUrl ?? string.Empty, httpClient, _logger);
 
-                if (!string.IsNullOrEmpty(formattedUrl))
+                // Pre-fetch hotel details so the widget can show room rates on button click
+                // without needing a separate fetch (blocked by ChatGPT's connect-src CSP).
+                HotelDetail? detail = null;
+                try
                 {
-                    imageUrl = formattedUrl;
+                    using var detailCts = new CancellationTokenSource(TimeSpan.FromSeconds(8));
+                    detail = await _hotelService.GetHotelDetails(
+                        x?.Id ?? string.Empty,
+                        string.IsNullOrEmpty(x?.HotelCode) ? null : x.HotelCode,
+                        string.IsNullOrEmpty(x?.Provider)  ? null : x.Provider,
+                        checkIn, checkOut, adults, rooms, currency)
+                        .WaitAsync(detailCts.Token);
                 }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning("Detail pre-fetch skipped for {Id}: {Msg}", x?.Id, ex.Message);
+                }
+
+                var imageUrl = await imageTask;
 
                 return new
                 {
@@ -464,10 +476,25 @@ namespace TravelAgent.Controllers
                     strike_through_price = x?.StrikeThroughPrice ?? 0,
                     currency = x?.Currency ?? string.Empty,
                     image_url = imageUrl,
-                    images = x?.Images ?? new List<string>(),
                     amenities = x?.Amenities ?? new List<string>(),
                     hotel_code = x?.HotelCode ?? string.Empty,
-                    provider = x?.Provider ?? string.Empty
+                    provider = x?.Provider ?? string.Empty,
+                    // Pre-fetched detail fields (used by widget on "View Details" click)
+                    description = detail?.Description,
+                    address     = detail?.Address,
+                    room_rates  = detail?.RoomRates?.Select(r => new
+                    {
+                        room_name               = r.RoomName,
+                        room_type               = r.RoomType,
+                        image_url               = r.ImageUrl,
+                        bed_configuration       = r.BedConfiguration,
+                        meals_description       = r.MealsDescription,
+                        refundable              = r.Refundable,
+                        free_cancellation_until = r.FreeCancellationUntil,
+                        price                   = r.Price,
+                        strike_through_price    = r.StrikeThroughPrice,
+                        currency                = r.Currency
+                    }).ToList()
                 };
             }));
 
@@ -537,14 +564,14 @@ namespace TravelAgent.Controllers
                 args.TryGetProperty("rooms", out var roomsEl);
                 args.TryGetProperty("currency", out var currencyEl);
 
-                hotelId = hotelIdEl.GetString() ?? string.Empty;
-                hotelCode = hotelCodeEl.GetString() ?? string.Empty;
-                provider = providerEl.GetString() ?? string.Empty;
-                checkInDate = checkInEl.GetString() ?? string.Empty;
-                checkOutDate = checkOutEl.GetString() ?? string.Empty;
-                if (adultsEl.ValueKind == JsonValueKind.Number) adults = adultsEl.GetInt32();
-                if (roomsEl.ValueKind == JsonValueKind.Number) rooms = roomsEl.GetInt32();
-                currency = currencyEl.GetString() ?? DefaultCurrency;
+                if (hotelIdEl.ValueKind   == JsonValueKind.String) hotelId     = hotelIdEl.GetString()   ?? string.Empty;
+                if (hotelCodeEl.ValueKind == JsonValueKind.String) hotelCode   = hotelCodeEl.GetString() ?? string.Empty;
+                if (providerEl.ValueKind  == JsonValueKind.String) provider    = providerEl.GetString()  ?? string.Empty;
+                if (checkInEl.ValueKind   == JsonValueKind.String) checkInDate = checkInEl.GetString()   ?? string.Empty;
+                if (checkOutEl.ValueKind  == JsonValueKind.String) checkOutDate = checkOutEl.GetString() ?? string.Empty;
+                if (adultsEl.ValueKind    == JsonValueKind.Number) adults      = adultsEl.GetInt32();
+                if (roomsEl.ValueKind     == JsonValueKind.Number) rooms       = roomsEl.GetInt32();
+                if (currencyEl.ValueKind  == JsonValueKind.String) currency    = currencyEl.GetString()  ?? DefaultCurrency;
             }
 
             if (string.IsNullOrWhiteSpace(hotelId))

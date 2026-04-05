@@ -682,11 +682,11 @@
     var galleryClass = hasThumb ? 'detail-gallery' : 'detail-gallery single-img';
     var galleryHtml = '<div class="' + galleryClass + '">';
     galleryHtml += '<div class="gal-main">'
-      + (imgs[0] ? '<img src="' + esc(imgs[0]) + '" alt="" onerror="this.style.display=\'none\'">'
+      + (imgs[0] ? '<img src="' + esc(imgs[0]) + '" alt="" onerror="this.parentNode.style.display=\'none\'">'
                  : '<div class="gal-placeholder">\uD83C\uDFE8</div>')
       + '</div>';
-    if (imgs[1]) galleryHtml += '<div class="gal-thumb"><img src="' + esc(imgs[1]) + '" alt="" onerror="this.style.display=\'none\'"></div>';
-    if (imgs[2]) galleryHtml += '<div class="gal-thumb"><img src="' + esc(imgs[2]) + '" alt="" onerror="this.style.display=\'none\'"></div>';
+    if (imgs[1]) galleryHtml += '<div class="gal-thumb"><img src="' + esc(imgs[1]) + '" alt="" onerror="this.parentNode.style.display=\'none\'"></div>';
+    if (imgs[2]) galleryHtml += '<div class="gal-thumb"><img src="' + esc(imgs[2]) + '" alt="" onerror="this.parentNode.style.display=\'none\'"></div>';
     galleryHtml += '</div>';
 
     var cur = (d.currency || 'AUD').toUpperCase();
@@ -785,80 +785,25 @@
   }
 
   function fetchAndShowDetail(hotel, ctx) {
-    // Phase 1: instant render from search card data
+    // Hotel details (room_rates, description, address) are pre-fetched by the backend
+    // during the search and embedded in each hotel object — no external call needed.
     var imgs = [];
     if (hotel.image_url) imgs.push(hotel.image_url);
-    if (hotel.images) {
-      hotel.images.forEach(function(u) { if (u && imgs.indexOf(u) === -1) imgs.push(u); });
-    }
+
     var cur = (hotel.currency || (ctx && ctx.currency) || 'AUD').toUpperCase();
+
     renderDetail({
-      id: hotel.id, name: hotel.name, star_rating: hotel.star_rating,
-      description: null, images: imgs, amenities: hotel.amenities || [],
-      address: hotel.location || null, currency: cur,
-      price: hotel.price || null, room_rates: []
+      id:          hotel.id,
+      name:        hotel.name,
+      star_rating: hotel.star_rating,
+      description: hotel.description || null,
+      images:      imgs,
+      amenities:   hotel.amenities   || [],
+      address:     hotel.address     || hotel.location || null,
+      currency:    cur,
+      price:       hotel.price       || null,
+      room_rates:  hotel.room_rates  || []
     });
-
-    // Add a "loading room rates" indicator at the bottom
-    var detailView = root.querySelector('.detail-view');
-    var ratesEl = document.createElement('div');
-    ratesEl.id = 'rates-loading';
-    ratesEl.innerHTML = '<div style="text-align:center;padding:16px 16px 8px">'
-      + '<div class="spinner" style="width:20px;height:20px;border-width:2px;margin:0 auto 8px"></div>'
-      + '<p style="font-size:0.78rem;color:#888">Loading room rates\u2026</p></div>';
-    if (detailView) detailView.appendChild(ratesEl);
-
-    // Phase 2a: try triggering getHotelDetails via postMessage (like Booking.com does).
-    // Multiple format attempts since OpenAI hasn't published the exact spec.
-    var toolArgs = {
-      hotel_id:   String(hotel.id         || ''),
-      hotel_code: String(hotel.hotel_code || ''),
-      provider:   String(hotel.provider   || ''),
-      check_in:   String(ctx && ctx.check_in  || ''),
-      check_out:  String(ctx && ctx.check_out || ''),
-      adults:     Number(ctx && ctx.adults    || 2),
-      rooms:      Number(ctx && ctx.rooms     || 1),
-      currency:   String(ctx && ctx.currency  || 'AUD')
-    };
-    var toolMsg = {
-      jsonrpc: '2.0',
-      method: 'ui/actions/invoke-tool',
-      params: { name: 'getHotelDetails', arguments: toolArgs }
-    };
-    try { window.parent.postMessage(toolMsg, '*'); } catch (_) {}
-
-    // Phase 2b: also try a direct fetch (works if CSP allows connect-src to our server)
-    if (_apiUrl && ctx) {
-      var params = new URLSearchParams({
-        hotel_id:   hotel.id         || '',
-        hotel_code: hotel.hotel_code || '',
-        provider:   hotel.provider   || '',
-        check_in:   ctx.check_in     || '',
-        check_out:  ctx.check_out    || '',
-        adults:     String(ctx.adults  || 2),
-        rooms:      String(ctx.rooms   || 1),
-        currency:   ctx.currency      || 'AUD'
-      });
-      fetch(_apiUrl + '/mcp/hotel/details?' + params.toString())
-        .then(function(res) {
-          if (!res.ok) throw new Error('HTTP ' + res.status);
-          return res.json();
-        })
-        .then(function(detail) {
-          renderDetail(detail);
-        })
-        .catch(function() {
-          var el = document.getElementById('rates-loading');
-          if (el) el.innerHTML = '<p style="color:#888;font-size:0.78rem;text-align:center;padding:8px 16px 12px">'
-            + 'Ask the assistant:<br><strong>"Show details for ' + esc(hotel.name || 'this hotel')
-            + ', hotel id: ' + esc(String(hotel.id || '')) + '"</strong></p>';
-        });
-    } else {
-      var el = document.getElementById('rates-loading');
-      if (el) el.innerHTML = '<p style="color:#888;font-size:0.78rem;text-align:center;padding:8px 16px 12px">'
-        + 'Ask the assistant:<br><strong>"Show details for ' + esc(hotel.name || 'this hotel')
-        + ', hotel id: ' + esc(String(hotel.id || '')) + '"</strong></p>';
-    }
   }
 
   /* ── Data sources ──────────────────────────────────────────────── */
