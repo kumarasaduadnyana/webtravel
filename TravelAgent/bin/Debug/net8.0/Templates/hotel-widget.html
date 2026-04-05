@@ -502,8 +502,9 @@
 
     var cards = hotels.map(function (h, idx) {
       var imgUrl = resolveImage(h);
+      // Always include emoji as fallback; img covers it when loaded, hides on error
       var imgHtml = imgUrl
-        ? '<img src="' + esc(imgUrl) + '" alt="' + esc(h.name) + '" onerror="console.warn(\'img failed:\',this.src);this.style.display=\'none\'">'
+        ? '&#x1F3DD;<img src="' + esc(imgUrl) + '" alt="' + esc(h.name) + '" onerror="this.style.display=\'none\'">'
         : '&#x1F3DD;';
 
       var cur = (h.currency || 'AUD').toUpperCase();

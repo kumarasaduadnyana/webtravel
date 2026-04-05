@@ -330,24 +330,29 @@ namespace TravelAgent.Controllers
             {
                 return Ok(JsonRpcError(request.Id, -32602, "Invalid params: missing params"));
             }
-                
+
             var root = request.Params.Value;
 
             if (!root.TryGetProperty("name", out var toolNameElement))
             {
                 return Ok(JsonRpcError(request.Id, -32602, "Invalid params: missing tool name"));
             }
-                
+
             var toolName = toolNameElement.GetString();
 
-            switch (toolName)
+            try
             {
-                case "searchHotels":
-                    return await HandleSearchHotels(request.Id, root);
-                case "getHotelDetails":
-                    return await HandleGetHotelDetails(request.Id, root);
-                default:
-                    return Ok(JsonRpcError(request.Id, -32601, $"Unknown tool: {toolName}"));
+                return toolName switch
+                {
+                    "searchHotels"    => await HandleSearchHotels(request.Id, root),
+                    "getHotelDetails" => await HandleGetHotelDetails(request.Id, root),
+                    _                 => Ok(JsonRpcError(request.Id, -32601, $"Unknown tool: {toolName}"))
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unhandled error in tool '{Tool}'", toolName);
+                return Ok(JsonRpcError(request.Id, -32603, $"Internal error: {ex.Message}"));
             }
         }
 
@@ -679,8 +684,6 @@ namespace TravelAgent.Controllers
             if (string.IsNullOrWhiteSpace(rawrlUrl))
                 return string.Empty;
 
-            logger.LogInformation("Fetching image: {Url}", rawrlUrl);
-
             var preferredUrl = Regex.Replace(rawrlUrl, @"_[a-z](\.[a-z]+)$", "_b$1");
             var imageSelected = preferredUrl != rawrlUrl
                 ? new[] { preferredUrl, rawrlUrl }
@@ -690,9 +693,8 @@ namespace TravelAgent.Controllers
             {
                 try
                 {
-                    var cts = new CancellationTokenSource(TimeSpan.FromSeconds(timeSeconds));
+                    using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(timeSeconds));
 
-                    // Some CDNs require a Referer to serve images
                     var reqMsg = new HttpRequestMessage(HttpMethod.Get, url);
                     if (Uri.TryCreate(url, UriKind.Absolute, out var uri))
                         reqMsg.Headers.Referrer = new Uri($"{uri.Scheme}://{uri.Host}/");
@@ -701,16 +703,15 @@ namespace TravelAgent.Controllers
 
                     if (!response.IsSuccessStatusCode)
                     {
-                        logger.LogInformation("Image fetch {Status} for {Url}", (int)response.StatusCode, url);
+                        logger.LogWarning("Image fetch returned {Status} for {Url}", (int)response.StatusCode, url);
                         continue;
                     }
 
                     var bytes = await response.Content.ReadAsByteArrayAsync();
                     var mime = response.Content.Headers.ContentType?.MediaType ?? "image/jpeg";
+                    logger.LogInformation("Image fetched OK ({Bytes} bytes, {Mime}) for {Url}", bytes.Length, mime, url);
 
-                    var dataUri = $"data:{mime};base64,{Convert.ToBase64String(bytes)}";
-
-                    return dataUri;
+                    return $"data:{mime};base64,{Convert.ToBase64String(bytes)}";
                 }
                 catch (Exception ex)
                 {
@@ -718,7 +719,10 @@ namespace TravelAgent.Controllers
                 }
             }
 
-            return string.Empty;
+            // Base64 conversion failed — fall back to raw URL.
+            // The widget's onerror handler will hide the broken img if the browser can't load it.
+            logger.LogWarning("Falling back to raw URL for image: {Url}", rawrlUrl);
+            return rawrlUrl;
         }
     }
 }

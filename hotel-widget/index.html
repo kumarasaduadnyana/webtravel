@@ -502,9 +502,10 @@
 
     var cards = hotels.map(function (h, idx) {
       var imgUrl = resolveImage(h);
+      // Always include placeholder; img covers it when loaded, hides on error
       var imgHtml = imgUrl
-        ? '<img src="' + esc(imgUrl) + '" alt="' + esc(h.name) + '" onerror="console.warn(\'img failed:\',this.src);this.style.display=\'none\'">'
-        : '&#x1F3DD;';
+        ? '<span style="font-size:2.5rem">\uD83C\uDFDD</span><img src="' + esc(imgUrl) + '" alt="' + esc(h.name) + '" onerror="this.style.display=\'none\'">'
+        : '<span style="font-size:2.5rem">\uD83C\uDFDD</span>';
 
       var cur = (h.currency || 'AUD').toUpperCase();
       var priceMain = fmtPrice(h.price, cur);
@@ -650,16 +651,16 @@
   var _apiUrl  = null;   // backend base URL
   var _lastHotels = null;
 
-  /* ── Amenity icon map ──────────────────────────────────────────── */
+  /* ── Amenity icon map (unicode escapes to avoid parse issues) ───── */
   var AMENITY_ICONS = {
-    'wifi': '📶', 'wi-fi': '📶', 'internet': '📶',
-    'pool': '🏊', 'swimming': '🏊',
-    'spa': '💆', 'gym': '🏋️', 'fitness': '🏋️',
-    'restaurant': '🍽️', 'dining': '🍽️',
-    'bar': '🍸', 'breakfast': '☕',
-    'parking': '🅿️', 'airport': '✈️',
-    'room service': '🛎️', 'concierge': '🛎️',
-    'pet': '🐾', 'garden': '🌿', 'beach': '🏖️'
+    'wifi': '\uD83D\uDCF6', 'wi-fi': '\uD83D\uDCF6', 'internet': '\uD83D\uDCF6',
+    'pool': '\uD83C\uDFCA', 'swimming': '\uD83C\uDFCA',
+    'spa': '\uD83D\uDEC6', 'gym': '\uD83C\uDFCB', 'fitness': '\uD83C\uDFCB',
+    'restaurant': '\uD83C\uDF7D', 'dining': '\uD83C\uDF7D',
+    'bar': '\uD83C\uDF78', 'breakfast': '\u2615',
+    'parking': '\uD83C\uDD7F', 'airport': '\u2708',
+    'room service': '\uD83D\uDECE', 'concierge': '\uD83D\uDECE',
+    'pet': '\uD83D\uDC3E', 'garden': '\uD83C\uDF3F', 'beach': '\uD83C\uDFD6'
   };
 
   function amenityIcon(name) {
@@ -667,7 +668,7 @@
     for (var key in AMENITY_ICONS) {
       if (lower.indexOf(key) !== -1) return AMENITY_ICONS[key];
     }
-    return '✓';
+    return '\u2713';
   }
 
   /* ── Detail view ──────────────────────────────────────────────── */
@@ -819,15 +820,22 @@
 
   function tryLoad(data) {
     if (!data) return false;
-    // Detail view
-    if (data.hotel_detail) { renderDetail(data.hotel_detail); return true; }
-    // Hotel list
-    var hotels = data.hotels || (Array.isArray(data) ? data : null);
-    if (hotels) {
-      if (data.context) _context = data.context;
-      if (data.api_url) _apiUrl  = data.api_url;
-      renderHotels(hotels);
-      return true;
+    try {
+      // Detail view
+      if (data.hotel_detail) { renderDetail(data.hotel_detail); return true; }
+      // Hotel list
+      var hotels = data.hotels || (Array.isArray(data) ? data : null);
+      if (hotels) {
+        if (data.context) _context = data.context;
+        if (data.api_url) _apiUrl  = data.api_url;
+        renderHotels(hotels);
+        return true;
+      }
+    } catch (err) {
+      console.error('[hotel-widget] render error:', err);
+      root.innerHTML = '<div class="state"><p class="state-title">Display error</p>'
+        + '<p class="state-sub">' + String(err.message || err) + '</p></div>';
+      return true; // stop polling
     }
     return false;
   }
