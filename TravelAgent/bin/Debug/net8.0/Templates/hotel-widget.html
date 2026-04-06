@@ -772,7 +772,7 @@
       + (d.address ? '<div class="detail-addr">' + PIN + '&nbsp;' + esc(d.address) + '</div>' : '')
       + '</div>'
       + priceBar
-      + (d.description ? '<div class="detail-desc">' + esc(d.description) + '</div>' : '')
+      + (d.description ? '<div class="detail-desc">' + d.description + '</div>' : '')
       + amenitiesHtml
       + (roomsHtml ? '<div id="rooms-section"><div class="section-title">Choose your room</div>' + roomsHtml + '</div>' : '')
       + '</div>';
@@ -819,20 +819,16 @@
       }
     }
 
-    // triggerUrlChange not available — fetch detail JSON via CORS and render inline.
-    renderDetailLoading();
-
-    if (!_apiUrl) {
-      // No API URL at all; show what we already have from search results.
-      renderBasicDetail(hotel, ctx2);
+    // triggerUrlChange not available.
+    // Navigate the iframe itself to our detail page — once loaded from our backend
+    // domain the page can make same-origin calls freely (ChatGPT's CSP no longer applies).
+    if (_apiUrl) {
+      window.location.href = _apiUrl.replace(/\/$/, '') + '/mcp/hotel/detail-page?' + buildDetailQs(hotel, ctx2);
       return;
     }
 
-    var jsonUrl = _apiUrl.replace(/\/$/, '') + '/mcp/hotel/detail-json?' + buildDetailQs(hotel, ctx2);
-    fetch(jsonUrl)
-      .then(function (r) { return r.ok ? r.json() : Promise.reject('HTTP\u00a0' + r.status); })
-      .then(function (d) { renderDetail(d); })
-      .catch(function () { renderBasicDetail(hotel, ctx2); });
+    // No API URL at all — fall back to basic inline view.
+    renderBasicDetail(hotel, ctx2);
   }
 
   function renderBasicDetail(hotel, ctx) {
