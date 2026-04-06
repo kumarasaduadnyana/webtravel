@@ -203,15 +203,16 @@ namespace TravelAgent.Services
 
             var singleParams = new SingleParameters
             {
-                ContentItemId = hotelId,
-                HotelCode = hotelCode,
-                Provider = provider,
-                CurrencyCode = currency,
-                CheckIn = checkIn,
-                CheckOut = checkOut,
-                RateType = RateType.Public,
-                Rooms = roomGuests,
-                CustomerSessionId = Guid.NewGuid().ToString("N")[..20]
+                ContentItemId     = hotelId,
+                HotelCode         = hotelCode,
+                Provider          = provider,
+                CurrencyCode      = currency,
+                CheckIn           = checkIn,
+                CheckOut          = checkOut,
+                RateType          = RateType.Public,
+                Rooms             = roomGuests,
+                CustomerSessionId = Guid.NewGuid().ToString("N")[..20],
+                CustomerUserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
             };
 
             // AvailabilityPropertyId (hotelCode) is the integer provider property ID;

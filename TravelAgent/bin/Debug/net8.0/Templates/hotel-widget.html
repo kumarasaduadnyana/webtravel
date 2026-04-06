@@ -784,9 +784,53 @@
     });
   }
 
+  /* ── triggerUrlChange: open hotel detail as a new ChatGPT section ── */
+
+  function triggerDetailNav(url) {
+    // Pattern 1: window.openai.triggerUrlChange (ChatGPT Skybridge API)
+    if (window.openai && typeof window.openai.triggerUrlChange === 'function') {
+      window.openai.triggerUrlChange(url);
+      return true;
+    }
+    // Pattern 2: global triggerUrlChange (injected by some host environments)
+    if (typeof window.triggerUrlChange === 'function') {
+      window.triggerUrlChange(url);
+      return true;
+    }
+    // Pattern 3: postMessage (try known Skybridge formats; result is unknown)
+    try {
+      window.parent.postMessage({ type: 'triggerUrlChange', url: url }, '*');
+      window.parent.postMessage({ method: 'triggerUrlChange', params: { url: url } }, '*');
+    } catch (_) {}
+    return false; // could not confirm navigation
+  }
+
   function fetchAndShowDetail(hotel, ctx) {
-    // Hotel details (room_rates, description, address) are pre-fetched by the backend
-    // during the search and embedded in each hotel object — no external call needed.
+    var ctx2 = ctx || { check_in: '', check_out: '', adults: 2, rooms: 1, currency: 'AUD' };
+
+    if (_apiUrl) {
+      var qs = 'hotel_id='   + encodeURIComponent(hotel.id         || '')
+             + '&hotel_code=' + encodeURIComponent(hotel.hotel_code || '')
+             + '&provider='   + encodeURIComponent(hotel.provider   || '')
+             + '&check_in='   + encodeURIComponent(ctx2.check_in    || '')
+             + '&check_out='  + encodeURIComponent(ctx2.check_out   || '')
+             + '&adults='     + encodeURIComponent(ctx2.adults      || 2)
+             + '&rooms='      + encodeURIComponent(ctx2.rooms       || 1)
+             + '&currency='   + encodeURIComponent(ctx2.currency    || 'AUD');
+      var detailUrl = _apiUrl.replace(/\/$/, '') + '/mcp/hotel/detail-page?' + qs;
+
+      var navigated = triggerDetailNav(detailUrl);
+      // If a confirmed API was used, ChatGPT will open the new section — we're done.
+      // If only postMessage was sent (navigated === false), also render inline as a
+      // fallback in case the host did not handle the postMessage.
+      if (navigated) return;
+    }
+
+    renderInlineDetail(hotel, ctx2);
+  }
+
+  function renderInlineDetail(hotel, ctx) {
+    // Inline fallback: render detail view inside the current widget.
     var imgs = [];
     if (hotel.image_url) imgs.push(hotel.image_url);
 

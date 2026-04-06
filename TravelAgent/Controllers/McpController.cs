@@ -665,6 +665,66 @@ namespace TravelAgent.Controllers
             return Ok(detail);
         }
 
+        // Serves the standalone hotel detail page HTML (opened via triggerUrlChange)
+        [HttpGet("hotel/detail-page")]
+        public IActionResult HotelDetailPage()
+        {
+            var path = Path.Combine(AppContext.BaseDirectory, "Templates", "hotel-detail-page.html");
+            return Content(System.IO.File.ReadAllText(path), "text/html; charset=utf-8");
+        }
+
+        // Returns snake_case hotel detail JSON consumed by hotel-detail-page.html
+        [HttpGet("hotel/detail-json")]
+        public async Task<IActionResult> GetHotelDetailJson(
+            [FromQuery] string hotel_id,
+            [FromQuery] string? hotel_code,
+            [FromQuery] string? provider,
+            [FromQuery] string check_in,
+            [FromQuery] string check_out,
+            [FromQuery] int adults = 2,
+            [FromQuery] int rooms = 1,
+            [FromQuery] string currency = DefaultCurrency)
+        {
+            if (string.IsNullOrWhiteSpace(hotel_id))
+                return BadRequest("hotel_id is required");
+
+            if (!DateTime.TryParse(check_in, out var checkIn) || !DateTime.TryParse(check_out, out var checkOut))
+                return BadRequest("check_in and check_out must be YYYY-MM-DD");
+
+            var detail = await _hotelService.GetHotelDetails(
+                hotel_id, hotel_code, provider, checkIn, checkOut, adults, rooms, currency);
+
+            if (detail == null) return NotFound();
+
+            return Ok(new
+            {
+                id          = detail.Id,
+                name        = detail.Name,
+                star_rating = detail.StarRating,
+                description = detail.Description,
+                images      = detail.Images,
+                amenities   = detail.Amenities,
+                address     = detail.Address,
+                latitude    = detail.Latitude,
+                longitude   = detail.Longitude,
+                currency    = detail.Currency,
+                price       = detail.Price,
+                room_rates  = detail.RoomRates?.Select(r => new
+                {
+                    room_name               = r.RoomName,
+                    room_type               = r.RoomType,
+                    image_url               = r.ImageUrl,
+                    bed_configuration       = r.BedConfiguration,
+                    meals_description       = r.MealsDescription,
+                    refundable              = r.Refundable,
+                    free_cancellation_until = r.FreeCancellationUntil,
+                    price                   = r.Price,
+                    strike_through_price    = r.StrikeThroughPrice,
+                    currency                = r.Currency
+                }).ToList()
+            });
+        }
+
         private IActionResult HandleResourcesList(McpRequest request)
         {
             return Ok(new

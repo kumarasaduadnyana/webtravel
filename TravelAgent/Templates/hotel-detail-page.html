@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hotel Details</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #fff;
+      color: #1a1a1a;
+      font-size: 14px;
+    }
+
+    .page { max-width: 780px; margin: 0 auto; padding-bottom: 48px; }
+
+    /* ── Loading / Error ───────────────────────────────────────────── */
+    .state {
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; min-height: 300px; gap: 14px;
+      text-align: center; padding: 24px;
+    }
+    .state p { font-size: 0.9rem; color: #888; }
+    .spinner {
+      width: 34px; height: 34px;
+      border: 3px solid #e0e0e0; border-top-color: #00bfbf;
+      border-radius: 50%; animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Gallery ───────────────────────────────────────────────────── */
+    .gallery {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      grid-template-rows: 165px 165px;
+      gap: 3px;
+      height: 333px;
+    }
+    .gallery.single {
+      grid-template-columns: 1fr;
+      grid-template-rows: 333px;
+    }
+    .gal-main { grid-row: 1 / 3; position: relative; background: #e8f0f0; overflow: hidden; }
+    .gallery.single .gal-main { grid-row: 1; grid-column: 1; }
+    .gal-thumb { position: relative; background: #e8f0f0; overflow: hidden; }
+    .gallery img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .gal-placeholder {
+      width: 100%; height: 100%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 4rem; background: #e0ecec;
+    }
+
+    /* ── Content ───────────────────────────────────────────────────── */
+    .content { padding: 22px 20px 0; display: flex; flex-direction: column; gap: 22px; }
+
+    /* Header */
+    .hotel-name { font-size: 1.45rem; font-weight: 800; color: #111; line-height: 1.25; margin-bottom: 8px; }
+    .meta-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 6px; }
+    .stars { color: #f5a623; font-size: 1rem; letter-spacing: 2px; }
+    .score-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      border: 1px solid #ddd; border-radius: 6px; padding: 3px 10px; font-size: 0.8rem;
+    }
+    .score-num { font-weight: 800; color: #111; }
+    .score-label { color: #444; }
+    .score-count { color: #999; font-size: 0.72rem; }
+    .hotel-addr { font-size: 0.8rem; color: #666; display: flex; align-items: center; gap: 5px; }
+
+    /* Price bar */
+    .price-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      background: #f7fefe; border: 1px solid #d4f0f0;
+      border-radius: 12px; padding: 14px 18px; gap: 12px;
+    }
+    .price-label { font-size: 0.72rem; color: #888; margin-bottom: 3px; }
+    .price-main { font-size: 1.3rem; font-weight: 800; color: #111; }
+    .price-note { font-size: 0.7rem; color: #22a06b; margin-top: 4px; }
+    .btn-select {
+      background: #00bfbf; color: #fff; border: none; border-radius: 50px;
+      padding: 12px 26px; font-size: 0.85rem; font-weight: 700;
+      cursor: pointer; white-space: nowrap; transition: background 0.15s; flex-shrink: 0;
+    }
+    .btn-select:hover { background: #009e9e; }
+
+    /* Section titles */
+    .section-title { font-size: 1rem; font-weight: 700; color: #111; margin-bottom: 12px; }
+
+    /* Description */
+    .desc-text { font-size: 0.83rem; color: #444; line-height: 1.75; }
+
+    /* Amenities */
+    .amenity-grid { display: flex; flex-wrap: wrap; gap: 10px 22px; }
+    .amenity-item { display: flex; align-items: center; gap: 7px; font-size: 0.82rem; color: #333; }
+    .amenity-icon { font-size: 1.15rem; flex-shrink: 0; }
+
+    /* Room list */
+    .room-group { border: 1px solid #e4e4e4; border-radius: 12px; overflow: hidden; margin-bottom: 12px; }
+    .room-header {
+      display: flex; gap: 12px; padding: 12px 14px;
+      background: #fafafa; border-bottom: 1px solid #eee;
+    }
+    .room-thumb {
+      width: 74px; height: 60px; border-radius: 8px;
+      object-fit: cover; flex-shrink: 0; background: #e8f0f0;
+    }
+    .room-thumb-ph {
+      width: 74px; height: 60px; border-radius: 8px;
+      background: #e0ecec; display: flex; align-items: center;
+      justify-content: center; font-size: 1.4rem; flex-shrink: 0;
+    }
+    .room-info { flex: 1; min-width: 0; }
+    .room-name { font-size: 0.88rem; font-weight: 700; color: #111; text-transform: uppercase; letter-spacing: 0.02em; }
+    .room-bed { font-size: 0.74rem; color: #666; margin-top: 4px; }
+
+    .rate-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 14px; border-top: 1px solid #f0f0f0; gap: 10px;
+    }
+    .rate-info { flex: 1; min-width: 0; }
+    .rate-cancel { font-size: 0.74rem; font-weight: 600; color: #22a06b; margin-bottom: 3px; }
+    .rate-cancel.non-refund { color: #d64545; }
+    .rate-meals { font-size: 0.74rem; color: #555; }
+    .rate-price-col { text-align: right; flex-shrink: 0; }
+    .rate-strike { font-size: 0.7rem; color: #aaa; text-decoration: line-through; }
+    .rate-price { font-size: 1rem; font-weight: 800; color: #111; }
+    .rate-nights { font-size: 0.68rem; color: #888; }
+    .btn-book-sm {
+      background: #00bfbf; color: #fff; border: none; border-radius: 50px;
+      padding: 8px 16px; font-size: 0.78rem; font-weight: 700;
+      cursor: pointer; flex-shrink: 0; transition: background 0.15s;
+    }
+    .btn-book-sm:hover { background: #009e9e; }
+  </style>
+</head>
+<body>
+<div id="root">
+  <div class="state"><div class="spinner"></div><p>Loading hotel details&hellip;</p></div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var root = document.getElementById('root');
+
+  /* ── Helpers ─────────────────────────────────────────────────────── */
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  function fmtPrice(val, cur) {
+    if (val == null || val === '') return null;
+    var sym = cur === 'AUD' ? 'AU$\u00a0' : cur === 'USD' ? '$' : cur === 'EUR' ? '\u20ac' : (cur || '') + '\u00a0';
+    return sym + parseFloat(val).toFixed(0);
+  }
+
+  function starHtml(n) {
+    var full = Math.floor(n || 0), empty = 5 - full;
+    return '<span class="stars">' + '\u2605'.repeat(full)
+      + '<span style="opacity:0.25">' + '\u2605'.repeat(empty) + '</span></span>';
+  }
+
+  function scoreLabel(r) {
+    var n = parseFloat(r) || 0;
+    if (n >= 95) return 'Exceptional';
+    if (n >= 90) return 'Wonderful';
+    if (n >= 80) return 'Excellent';
+    if (n >= 70) return 'Very Good';
+    if (n >= 60) return 'Good';
+    return 'Pleasant';
+  }
+
+  var ICONS = {
+    'wifi': '\uD83D\uDCF6', 'wi-fi': '\uD83D\uDCF6', 'internet': '\uD83D\uDCF6',
+    'pool': '\uD83C\uDFCA', 'swimming': '\uD83C\uDFCA',
+    'spa': '\uD83D\uDEC0', 'gym': '\uD83C\uDFCB', 'fitness': '\uD83C\uDFCB',
+    'restaurant': '\uD83C\uDF7D', 'dining': '\uD83C\uDF7D',
+    'bar': '\uD83C\uDF78', 'breakfast': '\u2615',
+    'parking': '\uD83C\uDD7F', 'airport': '\u2708',
+    'room service': '\uD83D\uDECE', 'concierge': '\uD83D\uDECE',
+    'pet': '\uD83D\uDC3E', 'garden': '\uD83C\uDF3F', 'beach': '\uD83C\uDFD6'
+  };
+  function amenityIcon(name) {
+    var lower = (name || '').toLowerCase();
+    for (var k in ICONS) { if (lower.indexOf(k) !== -1) return ICONS[k]; }
+    return '\u2713';
+  }
+
+  var PIN = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink:0;opacity:0.7">'
+    + '<path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>';
+
+  /* ── Read URL params ──────────────────────────────────────────────── */
+  var sp        = new URLSearchParams(location.search);
+  var hotelId   = sp.get('hotel_id')   || '';
+  var hotelCode = sp.get('hotel_code') || '';
+  var provider  = sp.get('provider')   || '';
+  var checkIn   = sp.get('check_in')   || '';
+  var checkOut  = sp.get('check_out')  || '';
+  var adults    = parseInt(sp.get('adults')   || '2', 10);
+  var numRooms  = parseInt(sp.get('rooms')    || '1', 10);
+  var currency  = sp.get('currency')  || 'AUD';
+
+  var nights = 1;
+  try { nights = Math.max(1, Math.round((new Date(checkOut) - new Date(checkIn)) / 86400000)); } catch (_) {}
+
+  if (!hotelId) {
+    root.innerHTML = '<div class="state"><p>Missing hotel_id parameter.</p></div>';
+    return;
+  }
+
+  /* ── Fetch hotel detail JSON ─────────────────────────────────────── */
+  var fetchUrl = '/mcp/hotel/detail-json'
+    + '?hotel_id='   + encodeURIComponent(hotelId)
+    + '&hotel_code=' + encodeURIComponent(hotelCode)
+    + '&provider='   + encodeURIComponent(provider)
+    + '&check_in='   + encodeURIComponent(checkIn)
+    + '&check_out='  + encodeURIComponent(checkOut)
+    + '&adults='     + adults
+    + '&rooms='      + numRooms
+    + '&currency='   + encodeURIComponent(currency);
+
+  fetch(fetchUrl)
+    .then(function (r) { return r.ok ? r.json() : Promise.reject('HTTP\u00a0' + r.status); })
+    .then(renderDetail)
+    .catch(function (err) {
+      root.innerHTML = '<div class="state"><p style="color:#d64545">Could not load hotel details.<br>'
+        + '<small style="color:#aaa">' + esc(String(err)) + '</small></p></div>';
+    });
+
+  /* ── Render ───────────────────────────────────────────────────────── */
+  function renderDetail(d) {
+    document.title = (d.name || 'Hotel') + ' \u2014 Details';
+
+    var cur = (d.currency || currency || 'AUD').toUpperCase();
+
+    /* Gallery */
+    var imgs = d.images || [];
+    var galleryHtml;
+    if (!imgs.length) {
+      galleryHtml = '<div class="gallery single"><div class="gal-main"><div class="gal-placeholder">\uD83C\uDFE8</div></div></div>';
+    } else if (imgs.length === 1) {
+      galleryHtml = '<div class="gallery single"><div class="gal-main">'
+        + '<img src="' + esc(imgs[0]) + '" alt="' + esc(d.name) + '" '
+        + 'onerror="this.outerHTML=\'<div class=gal-placeholder>\uD83C\uDFE8</div>\'">'
+        + '</div></div>';
+    } else {
+      galleryHtml = '<div class="gallery">'
+        + '<div class="gal-main"><img src="' + esc(imgs[0]) + '" alt="' + esc(d.name) + '" '
+        + 'onerror="this.outerHTML=\'<div class=gal-placeholder>\uD83C\uDFE8</div>\'"></div>';
+      if (imgs[1]) {
+        galleryHtml += '<div class="gal-thumb"><img src="' + esc(imgs[1]) + '" alt="" '
+          + 'onerror="this.parentNode.style.display=\'none\'"></div>';
+      }
+      if (imgs[2]) {
+        galleryHtml += '<div class="gal-thumb"><img src="' + esc(imgs[2]) + '" alt="" '
+          + 'onerror="this.parentNode.style.display=\'none\'"></div>';
+      }
+      galleryHtml += '</div>';
+    }
+
+    /* Score badge */
+    var scoreHtml = d.guest_rating
+      ? '<div class="score-badge">'
+        + '<span class="score-num">' + Math.round(parseFloat(d.guest_rating)) + '</span>'
+        + '<span class="score-label">' + esc(scoreLabel(d.guest_rating)) + '</span>'
+        + (d.guest_rating_count ? '<span class="score-count">(' + esc(String(d.guest_rating_count)) + ')</span>' : '')
+        + '</div>'
+      : '';
+
+    /* Price bar */
+    var priceStr = fmtPrice(d.price, cur);
+    var priceBar = priceStr
+      ? '<div class="price-bar">'
+        + '<div>'
+        + '<div class="price-label">From per night</div>'
+        + '<div class="price-main">' + esc(priceStr) + '</div>'
+        + '<div class="price-note">\u2713&nbsp;Taxes and fees included</div>'
+        + '</div>'
+        + '<button class="btn-select" onclick="var el=document.getElementById(\'rooms-section\');if(el)el.scrollIntoView({behavior:\'smooth\'})">Select Room</button>'
+        + '</div>'
+      : '';
+
+    /* Amenities */
+    var amenHtml = '';
+    if (d.amenities && d.amenities.length) {
+      amenHtml = '<div>'
+        + '<div class="section-title">Popular Amenities</div>'
+        + '<div class="amenity-grid">'
+        + d.amenities.slice(0, 10).map(function (a) {
+            return '<div class="amenity-item"><span class="amenity-icon">' + amenityIcon(a) + '</span><span>' + esc(a) + '</span></div>';
+          }).join('')
+        + '</div></div>';
+    }
+
+    /* Room rates grouped by room type */
+    var roomGroups = {};
+    (d.room_rates || []).forEach(function (r) {
+      var key = r.room_name || r.room_type || 'Standard Room';
+      if (!roomGroups[key]) roomGroups[key] = { info: r, rates: [] };
+      roomGroups[key].rates.push(r);
+    });
+
+    var roomsHtml = '';
+    Object.keys(roomGroups).forEach(function (key) {
+      var g  = roomGroups[key];
+      var r0 = g.info;
+
+      var thumbHtml = r0.image_url
+        ? '<img class="room-thumb" src="' + esc(r0.image_url) + '" alt="" onerror="this.style.display=\'none\'">'
+        : '<div class="room-thumb-ph">\uD83D\uDECF\uFE0F</div>';
+
+      roomsHtml += '<div class="room-group">'
+        + '<div class="room-header">'
+        + thumbHtml
+        + '<div class="room-info">'
+        + '<div class="room-name">' + esc(key) + '</div>'
+        + (r0.bed_configuration ? '<div class="room-bed">\uD83D\uDECF ' + esc(r0.bed_configuration) + '</div>' : '')
+        + '</div>'
+        + '</div>';
+
+      g.rates.forEach(function (rate) {
+        var rc         = (rate.currency || cur).toUpperCase();
+        var cancelClass = rate.refundable ? 'rate-cancel' : 'rate-cancel non-refund';
+        var cancelText  = rate.refundable
+          ? (rate.free_cancellation_until
+              ? 'Free cancellation before ' + new Date(rate.free_cancellation_until)
+                  .toLocaleDateString('en-AU', { day: '2-digit', month: 'short', year: 'numeric' })
+              : 'Free cancellation')
+          : 'Non-refundable';
+
+        var strikeSrc = rate.strike_through_price
+          ? '<div class="rate-strike">' + esc(fmtPrice(rate.strike_through_price, rc)) + '</div>'
+          : '';
+
+        roomsHtml += '<div class="rate-row">'
+          + '<div class="rate-info">'
+          + '<div class="' + cancelClass + '">' + esc(cancelText) + '</div>'
+          + '<div class="rate-meals">\u2611 ' + esc(rate.meals_description || 'Meals not included') + '</div>'
+          + '</div>'
+          + '<div class="rate-price-col">'
+          + strikeSrc
+          + '<div class="rate-price">' + esc(fmtPrice(rate.price, rc)) + '</div>'
+          + '<div class="rate-nights">total for ' + nights + (nights !== 1 ? ' nights' : ' night') + '</div>'
+          + '</div>'
+          + '<button class="btn-book-sm">Book Now</button>'
+          + '</div>';
+      });
+
+      roomsHtml += '</div>';
+    });
+
+    /* Assemble page */
+    root.innerHTML = '<div class="page">'
+      + galleryHtml
+      + '<div class="content">'
+
+      /* Hotel header */
+      + '<div>'
+      + '<div class="hotel-name">' + esc(d.name || 'Hotel') + '</div>'
+      + '<div class="meta-row">'
+      + (d.star_rating ? starHtml(d.star_rating) : '')
+      + scoreHtml
+      + '</div>'
+      + (d.address ? '<div class="hotel-addr">' + PIN + '&nbsp;' + esc(d.address) + '</div>' : '')
+      + '</div>'
+
+      /* Price bar */
+      + priceBar
+
+      /* Description */
+      + (d.description
+          ? '<div><div class="section-title">About this stay</div><div class="desc-text">' + esc(d.description) + '</div></div>'
+          : '')
+
+      /* Amenities */
+      + amenHtml
+
+      /* Rooms */
+      + (roomsHtml
+          ? '<div id="rooms-section"><div class="section-title">Choose your room</div>' + roomsHtml + '</div>'
+          : '')
+
+      + '</div>'
+      + '</div>';
+  }
+})();
+</script>
+</body>
+</html>
