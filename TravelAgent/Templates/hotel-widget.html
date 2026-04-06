@@ -589,16 +589,6 @@
       var hotel = hotels[idx];
       if (!hotel) return;
       var ctx = _context || { check_in: '', check_out: '', adults: 2, rooms: 1, currency: 'AUD' };
-
-      // Debug: log all available window.openai properties so we can find
-      // the correct API for triggering a new tool call / chat message.
-      if (window.openai) {
-        console.log('[hotel-widget] window.openai keys:', Object.keys(window.openai));
-        console.log('[hotel-widget] window.openai:', window.openai);
-      } else {
-        console.log('[hotel-widget] window.openai is not defined');
-      }
-
       fetchAndShowDetail(hotel, ctx);
     });
   }
@@ -795,17 +785,60 @@
   }
 
   /* ── View Details ─────────────────────────────────────────────────
-     ChatGPT's CSP blocks both fetch() (connect-src) and iframe navigation
-     (frame-src: none), so all hotel detail data must arrive pre-fetched
-     inside the structuredContent payload from the search tool call.
-     Render the pre-fetched data inline inside the widget.
+     Priority:
+     1. callMcp   — directly invoke the getHotelDetails MCP tool →
+                    ChatGPT scrolls down and renders a new detail section.
+     2. callTool  — same but via the generic tool API.
+     3. sendFollowUpMessage — submit a follow-up that triggers the tool
+                    via natural language processing.
+     4. Inline render — pre-fetched data from the search result (fallback).
   ── */
 
   function fetchAndShowDetail(hotel, ctx) {
     var ctx2 = ctx || { check_in: '', check_out: '', adults: 2, rooms: 1, currency: 'AUD' };
+
+    var toolArgs = {
+      hotel_id:   hotel.id           || '',
+      hotel_code: hotel.hotel_code   || undefined,
+      provider:   hotel.provider     || undefined,
+      check_in:   ctx2.check_in      || '',
+      check_out:  ctx2.check_out     || '',
+      adults:     ctx2.adults        || 2,
+      rooms:      ctx2.rooms         || 1,
+      currency:   ctx2.currency      || 'AUD'
+    };
+
+    if (window.openai) {
+      // 1. Direct MCP tool call — triggers a new chat section
+      if (typeof window.openai.callMcp === 'function') {
+        window.openai.callMcp('getHotelDetails', toolArgs);
+        return;
+      }
+
+      // 2. Generic tool call
+      if (typeof window.openai.callTool === 'function') {
+        window.openai.callTool('getHotelDetails', toolArgs);
+        return;
+      }
+
+      // 3. Follow-up message — ChatGPT processes it and calls the tool
+      if (typeof window.openai.sendFollowUpMessage === 'function') {
+        window.openai.sendFollowUpMessage(
+          'Show me full details for ' + hotel.name +
+          ' \u2014 hotel_id: ' + hotel.id +
+          ', check_in: ' + ctx2.check_in +
+          ', check_out: ' + ctx2.check_out +
+          ', adults: ' + (ctx2.adults || 2) +
+          ', rooms: ' + (ctx2.rooms || 1) +
+          ', currency: ' + (ctx2.currency || 'AUD')
+        );
+        return;
+      }
+    }
+
+    // 4. Fallback: render inline using pre-fetched data
     var imgs = hotel.image_url ? [hotel.image_url] : [];
     var cur  = (hotel.currency || ctx2.currency || 'AUD').toUpperCase();
-
     renderDetail({
       id:          hotel.id,
       name:        hotel.name,
