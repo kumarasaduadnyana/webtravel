@@ -440,8 +440,28 @@ namespace TravelAgent.Controllers
             var httpClient = _httpClientFactory.CreateClient("ImageProxy");
             var hotelResults = await Task.WhenAll(hotels.Take(count).Select(async x =>
             {
-                // Only fetch the image — details are loaded on-demand via /mcp/hotel/detail-page.
-                var imageUrl = await FormattedImageUrl(x?.ImageUrl ?? string.Empty, httpClient, _logger);
+                // Run image fetch and detail pre-fetch in parallel.
+                // Pre-fetching details here is required because ChatGPT's CSP blocks the widget
+                // from making any outbound fetch/navigation calls (connect-src + frame-src: none).
+                var imageTask = FormattedImageUrl(x?.ImageUrl ?? string.Empty, httpClient, _logger);
+
+                HotelDetail? detail = null;
+                try
+                {
+                    using var detailCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+                    detail = await _hotelService.GetHotelDetails(
+                        x?.Id ?? string.Empty,
+                        string.IsNullOrEmpty(x?.HotelCode) ? null : x.HotelCode,
+                        string.IsNullOrEmpty(x?.Provider)  ? null : x.Provider,
+                        checkIn, checkOut, adults, rooms, currency)
+                        .WaitAsync(detailCts.Token);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning("Detail pre-fetch skipped for {Id}: {Msg}", x?.Id, ex.Message);
+                }
+
+                var imageUrl = await imageTask;
 
                 return new
                 {
@@ -458,7 +478,23 @@ namespace TravelAgent.Controllers
                     image_url = imageUrl,
                     amenities = x?.Amenities ?? new List<string>(),
                     hotel_code = x?.HotelCode ?? string.Empty,
-                    provider = x?.Provider ?? string.Empty
+                    provider = x?.Provider ?? string.Empty,
+                    // Pre-fetched detail — only available if the API responded within 5 s
+                    description = detail?.Description,
+                    address     = detail?.Address,
+                    room_rates  = detail?.RoomRates?.Select(r => new
+                    {
+                        room_name               = r.RoomName,
+                        room_type               = r.RoomType,
+                        image_url               = r.ImageUrl,
+                        bed_configuration       = r.BedConfiguration,
+                        meals_description       = r.MealsDescription,
+                        refundable              = r.Refundable,
+                        free_cancellation_until = r.FreeCancellationUntil,
+                        price                   = r.Price,
+                        strike_through_price    = r.StrikeThroughPrice,
+                        currency                = r.Currency
+                    }).ToList()
                 };
             }));
 

@@ -589,6 +589,16 @@
       var hotel = hotels[idx];
       if (!hotel) return;
       var ctx = _context || { check_in: '', check_out: '', adults: 2, rooms: 1, currency: 'AUD' };
+
+      // Debug: log all available window.openai properties so we can find
+      // the correct API for triggering a new tool call / chat message.
+      if (window.openai) {
+        console.log('[hotel-widget] window.openai keys:', Object.keys(window.openai));
+        console.log('[hotel-widget] window.openai:', window.openai);
+      } else {
+        console.log('[hotel-widget] window.openai is not defined');
+      }
+
       fetchAndShowDetail(hotel, ctx);
     });
   }
@@ -785,67 +795,28 @@
   }
 
   /* ── View Details ─────────────────────────────────────────────────
-     Preference order:
-     1. window.openai.triggerUrlChange — opens the detail page as a new
-        ChatGPT section (supported by some Skybridge versions).
-     2. Fetch /mcp/hotel/detail-json via CORS and render inline — works
-        in all environments since CORS is open on the backend.
+     ChatGPT's CSP blocks both fetch() (connect-src) and iframe navigation
+     (frame-src: none), so all hotel detail data must arrive pre-fetched
+     inside the structuredContent payload from the search tool call.
+     Render the pre-fetched data inline inside the widget.
   ── */
-
-  function buildDetailQs(hotel, ctx) {
-    return 'hotel_id='   + encodeURIComponent(hotel.id         || '')
-         + '&hotel_code=' + encodeURIComponent(hotel.hotel_code || '')
-         + '&provider='   + encodeURIComponent(hotel.provider   || '')
-         + '&check_in='   + encodeURIComponent(ctx.check_in     || '')
-         + '&check_out='  + encodeURIComponent(ctx.check_out    || '')
-         + '&adults='     + encodeURIComponent(ctx.adults       || 2)
-         + '&rooms='      + encodeURIComponent(ctx.rooms        || 1)
-         + '&currency='   + encodeURIComponent(ctx.currency     || 'AUD');
-  }
 
   function fetchAndShowDetail(hotel, ctx) {
     var ctx2 = ctx || { check_in: '', check_out: '', adults: 2, rooms: 1, currency: 'AUD' };
-
-    // If triggerUrlChange is available, open as a new ChatGPT section.
-    if (_apiUrl) {
-      var detailPageUrl = _apiUrl.replace(/\/$/, '') + '/mcp/hotel/detail-page?' + buildDetailQs(hotel, ctx2);
-      if (window.openai && typeof window.openai.triggerUrlChange === 'function') {
-        window.openai.triggerUrlChange(detailPageUrl);
-        return;
-      }
-      if (typeof window.triggerUrlChange === 'function') {
-        window.triggerUrlChange(detailPageUrl);
-        return;
-      }
-    }
-
-    // triggerUrlChange not available.
-    // Navigate the iframe itself to our detail page — once loaded from our backend
-    // domain the page can make same-origin calls freely (ChatGPT's CSP no longer applies).
-    if (_apiUrl) {
-      window.location.href = _apiUrl.replace(/\/$/, '') + '/mcp/hotel/detail-page?' + buildDetailQs(hotel, ctx2);
-      return;
-    }
-
-    // No API URL at all — fall back to basic inline view.
-    renderBasicDetail(hotel, ctx2);
-  }
-
-  function renderBasicDetail(hotel, ctx) {
-    // Render with the limited data already in the search result (no room rates).
     var imgs = hotel.image_url ? [hotel.image_url] : [];
-    var cur  = (hotel.currency || (ctx && ctx.currency) || 'AUD').toUpperCase();
+    var cur  = (hotel.currency || ctx2.currency || 'AUD').toUpperCase();
+
     renderDetail({
       id:          hotel.id,
       name:        hotel.name,
       star_rating: hotel.star_rating,
-      description: null,
+      description: hotel.description || null,
       images:      imgs,
-      amenities:   hotel.amenities || [],
-      address:     hotel.location  || null,
+      amenities:   hotel.amenities   || [],
+      address:     hotel.address     || hotel.location || null,
       currency:    cur,
-      price:       hotel.price     || null,
-      room_rates:  []
+      price:       hotel.price       || null,
+      room_rates:  hotel.room_rates  || []
     });
   }
 
