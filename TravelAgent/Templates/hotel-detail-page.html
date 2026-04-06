@@ -207,32 +207,72 @@
   var nights = 1;
   try { nights = Math.max(1, Math.round((new Date(checkOut) - new Date(checkIn)) / 86400000)); } catch (_) {}
 
-  if (!hotelId) {
-    root.innerHTML = '<div class="state"><p>Missing hotel_id parameter.</p></div>';
-    return;
+  /* ── Try to load from window.openai.toolOutput (ChatGPT widget) ─── */
+  function tryToolOutput() {
+    try {
+      var data = window.openai && window.openai.toolOutput;
+      if (!data) return false;
+      if (data.hotel_detail) { renderDetail(data.hotel_detail); return true; }
+    } catch (_) {}
+    return false;
   }
 
-  /* ── Fetch hotel detail JSON ─────────────────────────────────────── */
-  var fetchUrl = '/mcp/hotel/detail-json'
-    + '?hotel_id='   + encodeURIComponent(hotelId)
-    + '&hotel_code=' + encodeURIComponent(hotelCode)
-    + '&provider='   + encodeURIComponent(provider)
-    + '&check_in='   + encodeURIComponent(checkIn)
-    + '&check_out='  + encodeURIComponent(checkOut)
-    + '&adults='     + adults
-    + '&rooms='      + numRooms
-    + '&currency='   + encodeURIComponent(currency);
+  /* ── Listen for postMessage from ChatGPT ─────────────────────────── */
+  window.addEventListener('message', function (e) {
+    var d = e.data;
+    if (!d) return;
+    var sc = d.structuredContent || (d.params && d.params.structuredContent) || d;
+    if (sc && sc.hotel_detail) { renderDetail(sc.hotel_detail); }
+  });
 
-  fetch(fetchUrl)
-    .then(function (r) { return r.ok ? r.json() : Promise.reject('HTTP\u00a0' + r.status); })
-    .then(renderDetail)
-    .catch(function (err) {
-      root.innerHTML = '<div class="state"><p style="color:#d64545">Could not load hotel details.<br>'
-        + '<small style="color:#aaa">' + esc(String(err)) + '</small></p></div>';
-    });
+  /* ── Poll window.openai.toolOutput (ChatGPT injects it async) ────── */
+  if (!tryToolOutput()) {
+    var attempts = 0;
+    var poll = setInterval(function () {
+      if (tryToolOutput() || ++attempts >= 100) {
+        clearInterval(poll);
+        // If toolOutput never arrived and we have URL params, do a direct fetch
+        if (attempts >= 100 && !_rendered) {
+          if (!hotelId) {
+            root.innerHTML = '<div class="state"><p style="color:#d64545">No hotel data received.</p></div>';
+            return;
+          }
+          doFetch();
+        }
+      }
+    }, 200);
+  }
+
+  /* ── Fetch hotel detail JSON (fallback when URL params are present) ─ */
+  var _rendered = false;
+
+  function doFetch() {
+    var fetchUrl = '/mcp/hotel/detail-json'
+      + '?hotel_id='   + encodeURIComponent(hotelId)
+      + '&hotel_code=' + encodeURIComponent(hotelCode)
+      + '&provider='   + encodeURIComponent(provider)
+      + '&check_in='   + encodeURIComponent(checkIn)
+      + '&check_out='  + encodeURIComponent(checkOut)
+      + '&adults='     + adults
+      + '&rooms='      + numRooms
+      + '&currency='   + encodeURIComponent(currency);
+
+    fetch(fetchUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject('HTTP\u00a0' + r.status); })
+      .then(renderDetail)
+      .catch(function (err) {
+        root.innerHTML = '<div class="state"><p style="color:#d64545">Could not load hotel details.<br>'
+          + '<small style="color:#aaa">' + esc(String(err)) + '</small></p></div>';
+      });
+  }
+
+  // If URL params are present, kick off fetch immediately in parallel with toolOutput polling
+  if (hotelId) doFetch();
 
   /* ── Render ───────────────────────────────────────────────────────── */
   function renderDetail(d) {
+    if (_rendered) return;
+    _rendered = true;
     document.title = (d.name || 'Hotel') + ' \u2014 Details';
 
     var cur = (d.currency || currency || 'AUD').toUpperCase();

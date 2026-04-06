@@ -13,6 +13,7 @@ namespace TravelAgent.Controllers
     {
         // ui:// URI — ChatGPT fetches HTML via resources/read and renders it in an iframe.
         private const string WidgetUri = "ui://widget/hotel-widget.html";
+        private const string WidgetDetailUri = "ui://widget/hotel-detail-page.html";
         private const string DefaultCurrency = "AUD";
 
         private readonly ILogger<McpController> _logger;
@@ -252,7 +253,7 @@ namespace TravelAgent.Controllers
                             },
                             _meta = new Dictionary<string, object>
                             {
-                                ["openai/outputTemplate"] = WidgetUri,
+                                ["openai/outputTemplate"] = WidgetDetailUri,
                                 ["openai/toolInvocation/invoking"] = "Loading hotel details\u2026",
                                 ["openai/toolInvocation/invoked"] = "Hotel details ready",
                                 ["openai/widgetAccessible"] = true
@@ -632,7 +633,7 @@ namespace TravelAgent.Controllers
                     structuredContent = new { hotel_detail = detailPayload },
                     _meta = new Dictionary<string, object>
                     {
-                        ["openai/outputTemplate"]          = WidgetUri,
+                        ["openai/outputTemplate"]          = WidgetDetailUri,
                         ["openai/toolInvocation/invoking"] = "Loading hotel details\u2026",
                         ["openai/toolInvocation/invoked"]  = "Hotel details ready"
                     }
@@ -744,6 +745,18 @@ namespace TravelAgent.Controllers
                             _meta = new Dictionary<string, object>
                             {
                                 ["openai/outputTemplate"] = WidgetUri,
+                                ["openai/widgetAccessible"] = true
+                            }
+                        },
+                        new
+                        {
+                            uri         = WidgetDetailUri,
+                            name        = "Hotel Detail Widget",
+                            mimeType    = "text/html+skybridge",   // required MIME type per OpenAI Apps SDK
+                            description = "Interactive hotel detail results card grid",
+                            _meta = new Dictionary<string, object>
+                            {
+                                ["openai/outputTemplate"] = WidgetDetailUri,
                                 ["openai/widgetAccessible"] = true
                             }
                         }

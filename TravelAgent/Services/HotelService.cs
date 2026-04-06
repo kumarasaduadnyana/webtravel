@@ -197,15 +197,17 @@ namespace TravelAgent.Services
             // Strip the pipe-separated suffix and extract provider/hotelCode from it if needed.
             var pipeParts    = hotelId.Split('|');
             var cleanId      = pipeParts[0];
-            if (pipeParts.Length > 1 && string.IsNullOrEmpty(hotelCode) && string.IsNullOrEmpty(provider))
+            if (pipeParts.Length > 1)
             {
                 // suffix looks like "Expedia-9832462" → provider = "Expedia", hotelCode = "9832462"
                 var suffix   = pipeParts[1];
                 var dashIdx  = suffix.LastIndexOf('-');
                 if (dashIdx > 0)
                 {
-                    provider  = suffix[..dashIdx];
-                    hotelCode = suffix[(dashIdx + 1)..];
+                    if (string.IsNullOrEmpty(provider))
+                        provider  = suffix[..dashIdx];
+                    if (string.IsNullOrEmpty(hotelCode))
+                        hotelCode = suffix[(dashIdx + 1)..];
                 }
             }
 

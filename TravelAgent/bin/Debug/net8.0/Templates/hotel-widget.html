@@ -808,49 +808,67 @@
       currency:   ctx2.currency      || 'AUD'
     };
 
+    function showInline() {
+      var imgs = (hotel.images && hotel.images.length) ? hotel.images
+               : hotel.image_url ? [hotel.image_url] : [];
+      var cur  = (hotel.currency || ctx2.currency || 'AUD').toUpperCase();
+      renderDetail({
+        id:          hotel.id,
+        name:        hotel.name,
+        star_rating: hotel.star_rating,
+        description: hotel.description || null,
+        images:      imgs,
+        amenities:   hotel.amenities   || [],
+        address:     hotel.address     || hotel.location || null,
+        currency:    cur,
+        price:       hotel.price       || null,
+        room_rates:  hotel.room_rates  || []
+      });
+    }
+
+    // Try Skybridge APIs — they trigger a NEW ChatGPT section (scroll + new widget).
+    // After calling them we also show loading so the user gets feedback.
+    // If nothing renders in the new section within 8 s, fall back to inline render.
+    var triggered = false;
     if (window.openai) {
-      // 1. Direct MCP tool call — triggers a new chat section
       if (typeof window.openai.callMcp === 'function') {
-        window.openai.callMcp('getHotelDetails', toolArgs);
-        return;
+        try { window.openai.callMcp('getHotelDetails', toolArgs); triggered = true; } catch (_) {}
       }
-
-      // 2. Generic tool call
-      if (typeof window.openai.callTool === 'function') {
-        window.openai.callTool('getHotelDetails', toolArgs);
-        return;
+      if (!triggered && typeof window.openai.callTool === 'function') {
+        try { window.openai.callTool('getHotelDetails', toolArgs); triggered = true; } catch (_) {}
       }
-
-      // 3. Follow-up message — ChatGPT processes it and calls the tool
-      if (typeof window.openai.sendFollowUpMessage === 'function') {
-        window.openai.sendFollowUpMessage(
-          'Show me full details for ' + hotel.name +
-          ' \u2014 hotel_id: ' + hotel.id +
-          ', check_in: ' + ctx2.check_in +
-          ', check_out: ' + ctx2.check_out +
-          ', adults: ' + (ctx2.adults || 2) +
-          ', rooms: ' + (ctx2.rooms || 1) +
-          ', currency: ' + (ctx2.currency || 'AUD')
-        );
-        return;
+      if (!triggered && typeof window.openai.sendFollowUpMessage === 'function') {
+        try {
+          window.openai.sendFollowUpMessage(
+            'Show me full details for ' + hotel.name +
+            ' \u2014 hotel_id: ' + hotel.id +
+            ', check_in: ' + ctx2.check_in +
+            ', check_out: ' + ctx2.check_out +
+            ', adults: ' + (ctx2.adults || 2) +
+            ', rooms: ' + (ctx2.rooms || 1) +
+            ', currency: ' + (ctx2.currency || 'AUD')
+          );
+          triggered = true;
+        } catch (_) {}
       }
     }
 
-    // 4. Fallback: render inline using pre-fetched data
-    var imgs = hotel.image_url ? [hotel.image_url] : [];
-    var cur  = (hotel.currency || ctx2.currency || 'AUD').toUpperCase();
-    renderDetail({
-      id:          hotel.id,
-      name:        hotel.name,
-      star_rating: hotel.star_rating,
-      description: hotel.description || null,
-      images:      imgs,
-      amenities:   hotel.amenities   || [],
-      address:     hotel.address     || hotel.location || null,
-      currency:    cur,
-      price:       hotel.price       || null,
-      room_rates:  hotel.room_rates  || []
-    });
+    if (triggered) {
+      // Show loading state while ChatGPT spawns the new detail section.
+      // If it doesn't appear (Proxy no-op) fall back to inline after 8 s.
+      renderDetailLoading();
+      _onDetailRendered = null; // clear any previous
+      var fallbackTimer = setTimeout(function () {
+        // If still on loading screen, render inline with pre-fetched data
+        showInline();
+      }, 8000);
+      // Cancel timer if a hotel_detail message arrives via postMessage
+      _onDetailRendered = function () { clearTimeout(fallbackTimer); };
+      return;
+    }
+
+    // No Skybridge API available — render inline immediately
+    showInline();
   }
 
   /* ── Data sources ──────────────────────────────────────────────── */
