@@ -902,7 +902,7 @@
     window.addEventListener('openai:set-globals', function () { checkOpenAiGlobals(); });
     var attempts = 0;
     var poll = setInterval(function () {
-      if (checkOpenAiGlobals() || ++attempts >= 50) clearInterval(poll);
+      if (checkOpenAiGlobals() || ++attempts >= 150) clearInterval(poll);
     }, 200);
     renderSpinner();
   }

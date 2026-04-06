@@ -191,7 +191,26 @@ namespace TravelAgent.Services
             int rooms,
             string currency)
         {
-            _logger.LogInformation("Getting hotel details for '{HotelId}', provider: {Provider}", hotelId, provider);
+            // The search API sometimes returns a composite content item ID in the form
+            // "contentId|Provider-PropertyId" (e.g. "trv-app-dev-...|Expedia-9832462").
+            // The accommodation API's /single endpoint only accepts the clean contentId part.
+            // Strip the pipe-separated suffix and extract provider/hotelCode from it if needed.
+            var pipeParts    = hotelId.Split('|');
+            var cleanId      = pipeParts[0];
+            if (pipeParts.Length > 1 && string.IsNullOrEmpty(hotelCode) && string.IsNullOrEmpty(provider))
+            {
+                // suffix looks like "Expedia-9832462" → provider = "Expedia", hotelCode = "9832462"
+                var suffix   = pipeParts[1];
+                var dashIdx  = suffix.LastIndexOf('-');
+                if (dashIdx > 0)
+                {
+                    provider  = suffix[..dashIdx];
+                    hotelCode = suffix[(dashIdx + 1)..];
+                }
+            }
+
+            _logger.LogInformation("Getting hotel details for '{HotelId}' (cleanId='{CleanId}'), provider: {Provider}, hotelCode: {HotelCode}",
+                hotelId, cleanId, provider, hotelCode);
 
             // Build rooms: each room is a list of GuestCount (AgeQualifyingCode 10 = adult)
             var roomGuests = Enumerable.Range(0, rooms)
@@ -203,7 +222,7 @@ namespace TravelAgent.Services
 
             var singleParams = new SingleParameters
             {
-                ContentItemId     = hotelId,
+                ContentItemId     = cleanId,
                 HotelCode         = hotelCode,
                 Provider          = provider,
                 CurrencyCode      = currency,
@@ -216,9 +235,9 @@ namespace TravelAgent.Services
             };
 
             // AvailabilityPropertyId (hotelCode) is the integer provider property ID;
-            // ContentItemId (hotelId) is a content-store string — try hotelCode first.
+            // ContentItemId (cleanId) is a content-store string — try hotelCode first.
             if (int.TryParse(hotelCode, out var propertyId) ||
-                int.TryParse(hotelId,   out propertyId))
+                int.TryParse(cleanId,   out propertyId))
             {
                 singleParams.PropertyId = propertyId;
             }

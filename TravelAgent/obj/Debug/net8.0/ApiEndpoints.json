@@ -17,6 +17,67 @@
   },
   {
     "ContainingType": "TravelAgent.Controllers.McpController",
+    "Method": "GetHotelDetailJson",
+    "RelativePath": "mcp/hotel/detail-json",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "hotel_id",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "hotel_code",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "provider",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "check_in",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "check_out",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "adults",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "rooms",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "currency",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "TravelAgent.Controllers.McpController",
+    "Method": "HotelDetailPage",
+    "RelativePath": "mcp/hotel/detail-page",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "TravelAgent.Controllers.McpController",
     "Method": "GetHotelDetailsRest",
     "RelativePath": "mcp/hotel/details",
     "HttpMethod": "GET",
