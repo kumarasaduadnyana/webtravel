@@ -265,3 +265,6 @@ appsettings.Local.json
 appsettings.Local.jsonc
 appsettings.Local.*.json
 appsettings.Local.*.jsonc
+
+
+.obsidian
