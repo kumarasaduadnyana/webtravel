@@ -3,6 +3,7 @@
 
 # Build output
 **/bin/
+**/bin/debug
 **/obj/
 
 # User-specific files
