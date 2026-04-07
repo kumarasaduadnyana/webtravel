@@ -1,6 +1,7 @@
 import './index.css'
 import HotelCarousel from './components/HotelCarousel'
 import { useMcpApp } from './hooks/useMcpApp'
+import { useHostStyles } from '@modelcontextprotocol/ext-apps/react'
 
 function calcNights(checkIn: string, checkOut: string): number {
   const diff = new Date(checkOut).getTime() - new Date(checkIn).getTime()
@@ -8,12 +9,17 @@ function calcNights(checkIn: string, checkOut: string): number {
 }
 
 function App() {
-  const { hotels, meta, subtitle, loading, error } = useMcpApp()
+  const { app, hotels, meta, subtitle, loading, error } = useMcpApp()
+
+  // Syncs host theme (light/dark) + CSS variables to document.
+  // This sets data-theme="dark" on <html> which activates Tailwind dark: classes.
+  useHostStyles(app, app?.getHostContext())
+
   const nights = meta ? calcNights(meta.checkIn, meta.checkOut) : 1
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-40 text-gray-400 text-sm">
+      <div className="flex items-center justify-center h-40 text-sm text-muted-foreground">
         Loading hotels…
       </div>
     )
@@ -21,7 +27,7 @@ function App() {
 
   if (error && !hotels.length) {
     return (
-      <div className="flex items-center justify-center h-40 text-gray-400 text-sm">
+      <div className="flex items-center justify-center h-40 text-sm text-muted-foreground">
         Could not connect to host.
       </div>
     )
@@ -29,16 +35,16 @@ function App() {
 
   if (!hotels.length) {
     return (
-      <div className="flex items-center justify-center h-40 text-gray-400 text-sm">
+      <div className="flex items-center justify-center h-40 text-sm text-muted-foreground">
         No hotels found for this search.
       </div>
     )
   }
 
   return (
-    <div className="bg-white p-4">
+    <div className="p-4 bg-transparent">
       {subtitle && (
-        <p className="text-sm text-gray-500 mb-3">{subtitle}</p>
+        <p className="text-sm text-muted-foreground mb-3">{subtitle}</p>
       )}
       <HotelCarousel hotels={hotels} nights={nights} />
     </div>

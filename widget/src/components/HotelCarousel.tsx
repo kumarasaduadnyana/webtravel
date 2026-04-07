@@ -1,58 +1,86 @@
-import { useRef, useState, useEffect, useCallback } from 'react'
-import HotelCard from './HotelCard'
-import type { Hotel } from '../types/hotel'
+import { useRef, useState, useEffect, useCallback } from "react";
+import HotelCard from "./HotelCard";
+import type { Hotel } from "../types/hotel";
 
 interface Props {
-  hotels: Hotel[]
-  nights: number
+  hotels: Hotel[];
+  nights: number;
 }
 
-const CARD_WIDTH = 290
-const GAP = 16
-const SCROLL_STEP = CARD_WIDTH + GAP
+const GAP = 16;
+const MAX_CARD = 290;
+
+/**
+ * Given the scroll container's visible width, compute a card width so that
+ * only complete cards are shown — no partial/cut-off cards.
+ *
+ * Steps:
+ *   1. Count how many MAX_CARD-wide cards fit: n = floor((available + gap) / (MAX_CARD + gap))
+ *   2. Stretch all n cards to fill the full available width evenly
+ */
+function calcCardWidth(available: number): number {
+  const n = Math.max(1, Math.floor((available + GAP) / (MAX_CARD + GAP)));
+  return (available - GAP * (n - 1)) / n;
+}
 
 export default function HotelCarousel({ hotels, nights }: Props) {
-  const scrollRef = useRef<HTMLDivElement>(null)
-  const [canPrev, setCanPrev] = useState(false)
-  const [canNext, setCanNext] = useState(hotels.length > 1)
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [canPrev, setCanPrev] = useState(false);
+  const [canNext, setCanNext] = useState(hotels.length > 1);
+  const [cardWidth, setCardWidth] = useState(290);
+
+  // Recompute card width whenever the scroll container resizes
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+
+    const ro = new ResizeObserver(() => {
+      setCardWidth(calcCardWidth(el.clientWidth));
+    });
+
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   const updateButtons = useCallback(() => {
-    const el = scrollRef.current
-    if (!el) return
-    setCanPrev(el.scrollLeft > 2)
-    setCanNext(el.scrollLeft + el.clientWidth < el.scrollWidth - 2)
-  }, [])
+    const el = scrollRef.current;
+    if (!el) return;
+    setCanPrev(el.scrollLeft > 2);
+    setCanNext(el.scrollLeft + el.clientWidth < el.scrollWidth - 2);
+  }, []);
 
   useEffect(() => {
-    const el = scrollRef.current
-    if (!el) return
-    updateButtons()
-    el.addEventListener('scroll', updateButtons, { passive: true })
-    window.addEventListener('resize', updateButtons)
+    const el = scrollRef.current;
+    if (!el) return;
+    updateButtons();
+    el.addEventListener("scroll", updateButtons, { passive: true });
+    window.addEventListener("resize", updateButtons);
     return () => {
-      el.removeEventListener('scroll', updateButtons)
-      window.removeEventListener('resize', updateButtons)
-    }
-  }, [updateButtons])
+      el.removeEventListener("scroll", updateButtons);
+      window.removeEventListener("resize", updateButtons);
+    };
+  }, [updateButtons]);
 
-  const scroll = (dir: 'prev' | 'next') => {
+  const scroll = (dir: "prev" | "next") => {
     scrollRef.current?.scrollBy({
-      left: dir === 'next' ? SCROLL_STEP : -SCROLL_STEP,
-      behavior: 'smooth',
-    })
-  }
+      left: dir === "next" ? cardWidth + GAP : -(cardWidth + GAP),
+      behavior: "smooth",
+    });
+  };
 
   return (
     <div className="relative flex items-start gap-2 px-1">
       {/* Left arrow */}
       <button
-        onClick={() => scroll('prev')}
+        onClick={() => scroll("prev")}
         disabled={!canPrev}
         aria-label="Previous hotels"
-        className="flex-shrink-0 mt-[105px] w-8 h-8 rounded bg-gray-200 text-gray-600 text-xl
+        className="flex-shrink-0 my-auto size-12 rounded-full
+                   bg-muted text-muted-foreground text-xl
                    flex items-center justify-center
-                   hover:bg-gray-300 disabled:opacity-25 disabled:cursor-not-allowed
-                   transition-all duration-150 cursor-pointer"
+                   hover:bg-border
+                   disabled:opacity-25 disabled:cursor-not-allowed
+                   transition-colors duration-150 cursor-pointer"
       >
         ‹
       </button>
@@ -63,22 +91,29 @@ export default function HotelCarousel({ hotels, nights }: Props) {
         className="hide-scrollbar flex gap-4 overflow-x-auto snap-x snap-mandatory flex-1 pb-1"
       >
         {hotels.map((hotel) => (
-          <HotelCard key={hotel.id} hotel={hotel} nights={nights} />
+          <HotelCard
+            key={hotel.id}
+            hotel={hotel}
+            nights={nights}
+            width={cardWidth}
+          />
         ))}
       </div>
 
       {/* Right arrow */}
       <button
-        onClick={() => scroll('next')}
+        onClick={() => scroll("next")}
         disabled={!canNext}
         aria-label="Next hotels"
-        className="flex-shrink-0 mt-[105px] w-8 h-8 rounded bg-gray-200 text-gray-600 text-xl
+        className="flex-shrink-0 my-auto size-12 rounded-full
+                   bg-muted text-muted-foreground text-xl
                    flex items-center justify-center
-                   hover:bg-gray-300 disabled:opacity-25 disabled:cursor-not-allowed
-                   transition-all duration-150 cursor-pointer"
+                   hover:bg-border
+                   disabled:opacity-25 disabled:cursor-not-allowed
+                   transition-colors duration-150 cursor-pointer"
       >
         ›
       </button>
     </div>
-  )
+  );
 }

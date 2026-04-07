@@ -1,28 +1,76 @@
 @import "tailwindcss";
 
-@theme {
-  --color-teal: #00bfbf;
-  --color-teal-hover: #00a8a8;
-  --color-vip-orange: #f97316;
+/* Dark variant triggered by MCP SDK's applyDocumentTheme() which sets data-theme="dark" on <html> */
+@custom-variant dark ([data-theme="dark"] &);
+
+/* ── Design tokens ────────────────────────────────────────────────── */
+:root {
+  /* surfaces */
+  --background:         transparent;
+  --card:               oklch(1 0 0);               /* white */
+  --card-foreground:    oklch(0.15 0.005 240);       /* near-black */
+
+  /* text */
+  --foreground:         oklch(0.15 0.005 240);
+  --muted-foreground:   oklch(0.52 0.015 250);       /* gray-500 */
+
+  /* structural */
+  --muted:              oklch(0.97 0.002 250);        /* gray-100 — image placeholder, arrow bg */
+  --border:             oklch(0.93 0.005 250);        /* gray-200 */
+
+  /* brand */
+  --primary:            oklch(0.73 0.12 191);         /* #00bfbf teal */
+  --primary-hover:      oklch(0.67 0.12 191);         /* #00a8a8 teal-dark */
+  --primary-foreground: oklch(1 0 0);                 /* white on teal */
+
+  /* VIP accent */
+  --accent:             oklch(0.71 0.19 47);           /* #f97316 orange */
+
+  --radius: 0.75rem;
 }
 
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
+[data-theme="dark"] {
+  --card:               oklch(0.24 0.008 240);         /* gray-800 */
+  --card-foreground:    oklch(0.97 0.002 250);         /* near-white */
+  --foreground:         oklch(0.97 0.002 250);
+  --muted-foreground:   oklch(0.60 0.015 250);         /* gray-400 */
+  --muted:              oklch(0.30 0.01 240);           /* gray-700 */
+  --border:             oklch(0.38 0.01 240);           /* gray-600 */
 }
 
-body {
-  margin: 0;
-  background: #ffffff;
-  -webkit-font-smoothing: antialiased;
+/* ── Tailwind theme mapping ───────────────────────────────────────── */
+/* Maps CSS vars to Tailwind utilities: bg-card, text-foreground, etc. */
+@theme inline {
+  --color-background:          var(--background);
+  --color-card:                var(--card);
+  --color-card-foreground:     var(--card-foreground);
+  --color-foreground:          var(--foreground);
+  --color-muted:               var(--muted);
+  --color-muted-foreground:    var(--muted-foreground);
+  --color-border:              var(--border);
+  --color-primary:             var(--primary);
+  --color-primary-hover:       var(--primary-hover);
+  --color-primary-foreground:  var(--primary-foreground);
+  --color-accent:              var(--accent);
+  --radius-card:               var(--radius);
 }
 
-#root {
-  width: 100%;
+/* ── Base resets ──────────────────────────────────────────────────── */
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    @apply bg-background text-foreground;
+    -webkit-font-smoothing: antialiased;
+  }
+  #root {
+    width: 100%;
+  }
 }
 
-/* hide scrollbar on carousel */
+/* ── Utilities ────────────────────────────────────────────────────── */
 .hide-scrollbar {
   scrollbar-width: none;
   -ms-overflow-style: none;
