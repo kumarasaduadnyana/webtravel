@@ -30,7 +30,7 @@ widget/src/  →  vite build  →  dist/index.html  →  copied to TravelAgent/W
   npm install -D @types/leaflet
   npm install -D vite-plugin-singlefile
   ```
-- [ ] Configure Tailwind v4 in `vite.config.ts`:
+- [x] Configure Tailwind v4 in `vite.config.ts`:
   ```ts
   import tailwindcss from '@tailwindcss/vite'
   import { viteSingleFile } from 'vite-plugin-singlefile'
@@ -40,8 +40,8 @@ widget/src/  →  vite build  →  dist/index.html  →  copied to TravelAgent/W
     build: { outDir: '../TravelAgent/Widgets', rollupOptions: { input: 'index.html' } }
   })
   ```
-- [ ] Add `@import "tailwindcss"` to `src/index.css`
-- [ ] Add npm build script in `widget/package.json`:
+- [x] Add `@import "tailwindcss"` to `src/index.css`
+- [x] Add npm build script in `widget/package.json`:
   ```json
   "scripts": {
     "dev": "vite",
@@ -55,7 +55,7 @@ widget/src/  →  vite build  →  dist/index.html  →  copied to TravelAgent/W
 
 ChatGPT injects tool result data into `window.__APP_DATA__` before rendering.
 
-- [ ] Create `src/types/hotel.ts` — TypeScript types matching `SearchHotelResponse` from the MCP tool:
+- [x] Create `src/types/hotel.ts` — TypeScript types matching `SearchHotelResponse` from the MCP tool:
   ```ts
   export interface Hotel {
     id: string
@@ -84,7 +84,7 @@ ChatGPT injects tool result data into `window.__APP_DATA__` before rendering.
     }
   }
   ```
-- [ ] Create `src/hooks/useAppData.ts` to read `window.__APP_DATA__`:
+- [x] Create `src/hooks/useAppData.ts` to read `window.__APP_DATA__`:
   ```ts
   declare global {
     interface Window { __APP_DATA__: SearchHotelResponse }
@@ -98,10 +98,10 @@ ChatGPT injects tool result data into `window.__APP_DATA__` before rendering.
 
 Port the existing `Templates/hotel-widget.html` carousel to React + Tailwind.
 
-- [ ] Create `src/components/HotelCard.tsx` — single hotel card with image, name, price, rating stars
-- [ ] Create `src/components/HotelCarousel.tsx` — horizontal scroll carousel with prev/next arrows and dot indicators
-- [ ] Style with Tailwind v4 utility classes (replace existing hand-written CSS)
-- [ ] Handle missing images gracefully (emoji fallback 🏨)
+- [x] Create `src/components/HotelCard.tsx` — single hotel card with image, name, price, rating stars
+- [x] Create `src/components/HotelCarousel.tsx` — horizontal scroll carousel with prev/next arrows and dot indicators
+- [x] Style with Tailwind v4 utility classes (replace existing hand-written CSS)
+- [x] Handle missing images gracefully (emoji fallback 🏨)
 
 ---
 
