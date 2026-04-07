@@ -1,0 +1,32 @@
+@import "tailwindcss";
+
+@theme {
+  --color-teal: #00bfbf;
+  --color-teal-hover: #00a8a8;
+  --color-vip-orange: #f97316;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #ffffff;
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  width: 100%;
+}
+
+/* hide scrollbar on carousel */
+.hide-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
