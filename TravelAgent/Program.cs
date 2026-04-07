@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.HttpOverrides;
+using ModelContextProtocol.Protocol;
 using Travlr.Search.Client;
 using Travlr.Accommodations.Application.Clients.AccommodationApi;
 using TravelAgent.Services;
@@ -11,6 +12,19 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddMcpServer(opt =>
+{
+    opt.ServerInfo = new Implementation
+    {
+        Name = "Travlr Booking Assistant",
+        Version = "1.0.0"
+    };
+})
+.WithHttpTransport()
+.WithToolsFromAssembly()
+.WithResourcesFromAssembly()
+.WithPromptsFromAssembly();
+
 builder.Services.AddHttpClient("ImageProxy", client =>
 {
     client.Timeout = TimeSpan.FromSeconds(10);
@@ -91,5 +105,7 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapMcp("/mcp");
 
 app.Run();

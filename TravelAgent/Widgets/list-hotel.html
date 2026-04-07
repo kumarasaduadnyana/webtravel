@@ -1,0 +1,546 @@
+
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<style>
+    :root {
+        --teal:      #00c9b1;
+        --teal-dark: #00a896;
+        --gold:      #f5a623;
+        --text:      #1a1a2e;
+        --muted:     #6b7280;
+        --border:    #e8eaed;
+        --bg:        #f7f8fa;
+        --white:     #ffffff;
+        --radius:    14px;
+        --shadow:    0 4px 24px rgba(0,0,0,0.07);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+        font-family: 'DM Sans', sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        padding: 2rem 1.5rem;
+    }
+
+    /* ── Header ── */
+    .header { margin-bottom: 1.75rem; }
+
+    .header h1 {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.65rem;
+        font-weight: 600;
+        color: var(--text);
+        margin-bottom: .3rem;
+    }
+
+    .header .subtitle {
+        font-size: .85rem;
+        color: var(--muted);
+        display: flex;
+        align-items: center;
+        gap: .4rem;
+    }
+
+    /* ── Carousel wrapper ── */
+    .carousel-outer {
+        position: relative;
+        max-width: 1100px;
+    }
+
+    .carousel-track-wrap {
+        overflow: hidden;
+        border-radius: var(--radius);
+    }
+
+    .carousel-track {
+        display: flex;
+        gap: 1.25rem;
+        transition: transform .4s cubic-bezier(.4,0,.2,1);
+        will-change: transform;
+    }
+
+    /* ── Card ── */
+    .card {
+        background: var(--white);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        flex: 0 0 calc(33.333% - .84rem); /* 3-up */
+        min-width: 0;
+        transition: transform .2s ease, box-shadow .2s ease;
+    }
+
+    @media (max-width: 900px) {
+        .card { flex: 0 0 calc(50% - .625rem); }
+    }
+    @media (max-width: 580px) {
+        .card { flex: 0 0 100%; }
+    }
+
+    .card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 36px rgba(0,0,0,0.11);
+    }
+
+    /* ── Photo ── */
+    .card-photo {
+        width: 100%;
+        aspect-ratio: 4/3;
+        object-fit: cover;
+        display: block;
+    }
+
+    .card-photo-placeholder {
+        width: 100%;
+        aspect-ratio: 4/3;
+        background: linear-gradient(135deg, #e0e7ef 0%, #c9d6e3 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        color: #a0aec0;
+    }
+
+    /* ── Body ── */
+    .card-body {
+        padding: 1rem 1rem .85rem;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: .55rem;
+    }
+
+    .card-name {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.05rem;
+        font-weight: 600;
+        color: var(--text);
+        line-height: 1.35;
+    }
+
+    .card-location {
+        font-size: .78rem;
+        color: var(--muted);
+        display: flex;
+        align-items: center;
+        gap: .3rem;
+    }
+
+    .card-location svg {
+        width: 11px; height: 11px;
+        fill: var(--muted);
+        flex-shrink: 0;
+    }
+
+    .card-meta { font-size: .78rem; color: var(--muted); }
+
+    .taxes-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: .3rem;
+        font-size: .75rem;
+        font-weight: 500;
+        color: var(--teal-dark);
+    }
+    .taxes-badge::before { content: '✓'; font-weight: 700; }
+
+    .amenities {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .35rem;
+        margin-top: .1rem;
+    }
+
+    .chip {
+        font-size: .68rem;
+        padding: .2rem .5rem;
+        border: 1px solid var(--border);
+        border-radius: 100px;
+        color: var(--text);
+        background: var(--bg);
+        white-space: nowrap;
+    }
+
+    /* ── Footer ── */
+    .card-footer {
+        padding: .75rem 1rem;
+        border-top: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: .75rem;
+    }
+
+    .rating { display: flex; align-items: center; gap: .4rem; font-size: .78rem; }
+    .stars  { display: flex; gap: 1px; }
+
+    .star { width: 14px; height: 14px; fill: var(--gold); }
+    .star.empty { fill: #dde2e8; }
+
+    .review-score {
+        background: var(--border);
+        color: var(--text);
+        font-size: .72rem;
+        font-weight: 700;
+        padding: .15rem .4rem;
+        border-radius: 5px;
+    }
+
+    .review-label { color: var(--muted); }
+
+    .btn-view {
+        background: var(--teal);
+        color: var(--white);
+        border: none;
+        border-radius: 100px;
+        padding: .55rem 1.25rem;
+        font-family: 'DM Sans', sans-serif;
+        font-size: .85rem;
+        font-weight: 600;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: background .15s, transform .1s;
+        flex-shrink: 0;
+    }
+    .btn-view:hover { background: var(--teal-dark); }
+    .btn-view:active { transform: scale(.97); }
+
+    /* ── Carousel nav arrows ── */
+    .carousel-btn {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 40px; height: 40px;
+        background: var(--white);
+        border: 1.5px solid var(--border);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        z-index: 10;
+        transition: box-shadow .15s, opacity .2s;
+    }
+    .carousel-btn:hover { box-shadow: 0 4px 18px rgba(0,0,0,0.15); }
+    .carousel-btn[disabled] { opacity: .3; cursor: default; pointer-events: none; }
+    .carousel-btn svg { width: 16px; height: 16px; stroke: var(--text); fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+    .carousel-btn.prev { left: -20px; }
+    .carousel-btn.next { right: -20px; }
+
+    /* ── Dots ── */
+    .carousel-dots {
+        display: flex;
+        justify-content: center;
+        gap: .4rem;
+        margin-top: 1.1rem;
+    }
+
+    .dot {
+        width: 7px; height: 7px;
+        border-radius: 50%;
+        background: var(--border);
+        border: none;
+        cursor: pointer;
+        padding: 0;
+        transition: background .2s, transform .2s;
+    }
+    .dot.active {
+        background: var(--teal);
+        transform: scale(1.3);
+    }
+
+    /* ── Skeleton loading ── */
+    .skeleton-track {
+        display: flex;
+        gap: 1.25rem;
+    }
+
+    .skeleton-card {
+        flex: 0 0 calc(33.333% - .84rem);
+        border-radius: var(--radius);
+        background: var(--white);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+    }
+
+    @media (max-width: 900px) { .skeleton-card { flex: 0 0 calc(50% - .625rem); } }
+    @media (max-width: 580px) { .skeleton-card { flex: 0 0 100%; } }
+
+    .bone {
+        background: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%);
+        background-size: 200% 100%;
+        border-radius: 5px;
+        animation: shimmer 1.4s infinite;
+    }
+    @keyframes shimmer { to { background-position: -200% 0; } }
+
+    .skeleton-photo { aspect-ratio: 4/3; width: 100%; border-radius: 0; }
+
+    .skeleton-body {
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: .6rem;
+    }
+
+    .skeleton-footer {
+        padding: .75rem 1rem;
+        border-top: 1px solid var(--border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+</style>
+
+<div x-data="travlrApp">
+
+    <!-- Header -->
+    <div class="header">
+        <h1>Stays that match your search</h1>
+        <div class="subtitle" x-show="!loading && hotels.length > 0">
+            <span>📍</span>
+            <span x-text="subtitle"></span>
+        </div>
+        <div class="subtitle" x-show="loading">Loading results…</div>
+    </div>
+
+    <!-- Skeleton -->
+    <div class="carousel-outer" x-show="loading">
+        <div class="carousel-track-wrap">
+            <div class="skeleton-track">
+                <template x-for="n in 3" x-bind:key="n">
+                    <div class="skeleton-card">
+                        <div class="bone skeleton-photo"></div>
+                        <div class="skeleton-body">
+                            <div class="bone" style="height:14px;width:60%;"></div>
+                            <div class="bone" style="height:11px;width:40%;"></div>
+                            <div class="bone" style="height:11px;width:30%;"></div>
+                            <div style="display:flex;gap:.35rem;flex-wrap:wrap;">
+                                <div class="bone" style="height:22px;width:80px;border-radius:100px;"></div>
+                                <div class="bone" style="height:22px;width:60px;border-radius:100px;"></div>
+                            </div>
+                        </div>
+                        <div class="skeleton-footer">
+                            <div class="bone" style="height:14px;width:80px;"></div>
+                            <div class="bone" style="height:32px;width:100px;border-radius:100px;"></div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </div>
+
+    <!-- Carousel -->
+    <div class="carousel-outer" x-show="!loading && hotels.length > 0" x-ref="outer">
+
+        <!-- Prev -->
+        <button
+                class="carousel-btn prev"
+                x-bind:disabled="currentIndex === 0"
+                x-on:click="prev"
+                aria-label="Previous"
+        >
+            <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+
+        <div class="carousel-track-wrap">
+            <div
+                    class="carousel-track"
+                    x-ref="track"
+                    x-bind:style="'transform: translateX(-' + offset + 'px)'"
+            >
+                <template x-for="hotel in hotels" x-bind:key="hotel.id ?? hotel.name">
+                    <div class="card">
+
+                        <!-- Photo -->
+                        <template x-if="hotel.images.length > 0">
+                            <img class="card-photo" x-bind:src="hotel.images[0]" x-bind:alt="hotel.name" loading="lazy" />
+                        </template>
+                        <template x-if="hotel.images.length === 0">
+                            <div class="card-photo-placeholder">🏨</div>
+                        </template>
+
+                        <!-- Body -->
+                        <div class="card-body">
+                            <div class="card-name" x-text="hotel.name"></div>
+                            <div class="card-location">
+                                <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z"/></svg>
+                                <span x-text="hotel.location ?? hotel.address ?? ''"></span>
+                            </div>
+                            <div class="card-meta" x-show="hotel.room_meta" x-text="hotel.room_meta"></div>
+                            <div class="taxes-badge" x-show="hotel.taxes_included">Taxes and fees included</div>
+                            <div class="amenities" x-show="hotel.amenities && hotel.amenities.length > 0">
+                                <template x-for="amenity in (hotel.amenities ?? []).slice(0, 5)" x-bind:key="amenity">
+                                    <span class="chip" x-text="amenity"></span>
+                                </template>
+                            </div>
+                        </div>
+
+                        <!-- Footer -->
+                        <div class="card-footer">
+                            <div class="rating">
+                                <div class="stars">
+                                    <template x-for="i in 5" x-bind:key="i">
+                                        <svg class="star" x-bind:class="i <= (hotel.rating ?? 0) ? '' : 'empty'" viewBox="0 0 24 24">
+                                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                        </svg>
+                                    </template>
+                                </div>
+                                <!--<template x-if="hotel.starRating || hotel.guestRating">
+                                    <span class="review-score" x-text="hotel.starRating || hotel.guestRating"></span>
+                                </template>
+                                <template x-if="hotel.guestRating">
+                                    <span class="review-label" x-text="hotel.review_label"></span>
+                                </template>-->
+                            </div>
+                            <button
+                                    class="btn-view"
+                                    x-on:click="viewDetails(hotel)"
+                            >View Details</button>
+                        </div>
+
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <!-- Next -->
+        <button
+                class="carousel-btn next"
+                x-bind:disabled="currentIndex >= maxIndex"
+                x-on:click="next"
+                aria-label="Next"
+        >
+            <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+
+        <!-- Dots -->
+        <div class="carousel-dots" x-show="pageCount > 1">
+            <template x-for="p in pageCount" x-bind:key="p">
+                <button
+                        class="dot"
+                        x-bind:class="p - 1 === currentIndex ? 'active' : ''"
+                        x-on:click="goTo(p - 1)"
+                        x-bind:aria-label="'Go to page ' + p"
+                ></button>
+            </template>
+        </div>
+
+    </div>
+
+    <!-- Empty state -->
+    <div style="text-align:center;padding:3rem 1rem;color:#9ca3af;" x-show="!loading && hotels.length === 0">
+        <div style="font-size:2.5rem;margin-bottom:.5rem;">🏨</div>
+        <div>Waiting for results…</div>
+    </div>
+
+</div>
+
+<script type="module">
+    import Alpine from 'https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/module.esm.js';
+    import { App } from 'https://cdn.jsdelivr.net/npm/@modelcontextprotocol/ext-apps@1.5.0/+esm';
+
+    const app = new App({ name: 'Travlr Booking Assistant', version: '1.0.0' });
+    
+    Alpine.data('travlrApp', () => ({
+        hotels:  [],
+        loading: true,
+        subtitle: '',
+
+        // carousel state
+        currentIndex: 0,
+        perPage: 3,
+        offset: 0,
+
+        get maxIndex() {
+            return Math.max(0, Math.ceil(this.hotels.length / this.perPage) - 1);
+        },
+
+        get pageCount() {
+            return Math.ceil(this.hotels.length / this.perPage);
+        },
+
+        init() {
+            window._alpineStore = this;
+            this._updatePerPage();
+            window.addEventListener('resize', () => this._updatePerPage());
+        },
+
+        // Detect how many cards are visible based on viewport
+        _updatePerPage() {
+            const w = window.innerWidth;
+            this.perPage = w <= 580 ? 1 : w <= 900 ? 2 : 3;
+            this.currentIndex = 0;
+            this._updateOffset();
+        },
+
+        _updateOffset() {
+            const track = this.$refs?.track;
+            if (!track) { this.offset = 0; return; }
+            const card = track.children[0];
+            if (!card) { this.offset = 0; return; }
+            const gap = 20; // 1.25rem gap in px
+            this.offset = this.currentIndex * (card.offsetWidth + gap);
+        },
+
+        prev() {
+            if (this.currentIndex > 0) {
+                this.currentIndex--;
+                this._updateOffset();
+            }
+        },
+
+        next() {
+            if (this.currentIndex < this.maxIndex) {
+                this.currentIndex++;
+                this._updateOffset();
+            }
+        },
+
+        goTo(index) {
+            this.currentIndex = index;
+            this._updateOffset();
+        },
+
+        setResults(data) {
+            let list = [];
+            if (Array.isArray(data)) {
+                list = data;
+            } else if (data && typeof data === 'object') {
+                list = data.hotels ?? data.results ?? data.items ?? [];
+                if (data.destination || data.location) {
+                    const count = list.length;
+                    this.subtitle = `${data.destination ?? data.location} · ${count} propert${count === 1 ? 'y' : 'ies'}`;
+                }
+            }
+            this.hotels = list;
+            this.loading = false;
+            this.currentIndex = 0;
+            // Wait for DOM then calculate offset
+            this.$nextTick(() => this._updateOffset());
+        },
+
+        viewDetails(hotel) {
+            // Call back to host if a booking_url or detail link is available,
+            // otherwise the host can intercept this via callServerTool
+            alert('Viewing details for hotel: ' + hotel.name);
+        },
+    }));
+
+    app.ontoolresult = (result) => {
+        const data = result.structuredContent
+            ?? JSON.parse(result.content?.find(c => c.type === 'text')?.text ?? 'null');
+
+        if (window._alpineStore) {
+            window._alpineStore.setResults(data ?? []);
+        }
+    };
+
+    Alpine.start();
+    await app.connect();
+</script>

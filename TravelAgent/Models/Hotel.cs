@@ -5,6 +5,7 @@ namespace TravelAgent.Models
         public string? Id { get; set; }
         public string? Name { get; set; }
         public string? Location { get; set; }
+        public double? Rating { get; set; }
         public double? StarRating { get; set; }
         public double? GuestRating { get; set; }
         public int? GuestRatingCount { get; set; }

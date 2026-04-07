@@ -8,7 +8,7 @@ using TravelAgent.Services;
 namespace TravelAgent.Controllers
 {
     [ApiController]
-    [Route("mcp")]
+    [Route("mcp-bkp")]
     public class McpController : ControllerBase
     {
         // ui:// URI — ChatGPT fetches HTML via resources/read and renders it in an iframe.
@@ -367,7 +367,7 @@ namespace TravelAgent.Controllers
             var rooms = 1;
             var currency = DefaultCurrency;
             string? sortBy = null;
-            int[]? starRatings = null;
+            List<int>? starRatings = null;
             double? maxPrice = null;
             int? minRating = null;
             var count = 5;
@@ -405,7 +405,7 @@ namespace TravelAgent.Controllers
                 if (minStarsValue.ValueKind == JsonValueKind.Number)
                 {
                     var s = minStarsValue.GetInt32();
-                    starRatings = Enumerable.Range(s, 6 - s).ToArray(); // e.g. min_stars=4 → [4,5]
+                    starRatings = Enumerable.Range(s, 6 - s).ToList(); // e.g. min_stars=4 → [4,5]
                 }
 
                 if (maxPriceValue.ValueKind == JsonValueKind.Number)

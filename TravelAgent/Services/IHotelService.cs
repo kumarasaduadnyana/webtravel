@@ -13,10 +13,10 @@ namespace TravelAgent.Services
             int rooms,
             string currency,
             string? sortBy = null,
-            int[]? starRatings = null,
+            List<int>? starRatings = null,
             double? maxPrice = null,
             int? minRating = null,
-            string[]? amenities = null);
+            List<string>? amenities = null);
 
         Task<HotelDetailModel?> GetHotelDetails(
             string hotelId,

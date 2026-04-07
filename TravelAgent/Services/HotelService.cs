@@ -29,10 +29,10 @@ namespace TravelAgent.Services
             int rooms,
             string currency,
             string? sortBy = null,
-            int[]? starRatings = null,
+            List<int>? starRatings = null,
             double? maxPrice = null,
             int? minRating = null,
-            string[]? amenities = null)
+            List<string>? amenities = null)
         {
             string destinationFullName = destination;
             
@@ -154,10 +154,10 @@ namespace TravelAgent.Services
 
         private static (ICollection<int>? starRatings, ICollection<string>? amenities,
             AccommodationSearchByDestinationRequestViewModel_PriceRange? priceRange)
-            BuildFilters(int[]? starRatings, double? maxPrice, string[]? amenities)
+            BuildFilters(List<int>? starRatings, double? maxPrice, List<string>? amenities)
         {
-            ICollection<int>? stars = starRatings?.Length > 0 ? starRatings : null;
-            ICollection<string>? amen = amenities?.Length > 0 ? amenities : null;
+            ICollection<int>? stars = starRatings?.Count > 0 ? starRatings : null;
+            ICollection<string>? amen = amenities?.Count > 0 ? amenities : null;
             AccommodationSearchByDestinationRequestViewModel_PriceRange? price = maxPrice.HasValue
                 ? new AccommodationSearchByDestinationRequestViewModel_PriceRange { ToPriceAUD = maxPrice }
                 : null;
@@ -330,6 +330,7 @@ namespace TravelAgent.Services
                 Id = doc.Id,
                 Name = doc.Name,
                 Location = doc.DestinationDetails?.DisplayName ?? doc.DestinationDetails?.City ?? fallbackLocation,
+                Rating = doc.StarRating ?? ConvertToStarRating(doc.GuestRating ?? 0),
                 StarRating = doc.StarRating,
                 GuestRating = doc.GuestRating,
                 GuestRatingCount = doc.GuestRatingCount,
@@ -343,6 +344,15 @@ namespace TravelAgent.Services
                 HotelCode = doc.AvailabilityPropertyId,
                 Provider = doc.AvailabilityProvider?.ToString()
             }).ToList();
+        }
+
+        public static double ConvertToStarRating(double score)
+        {
+            if (score < 0 || score > 100)
+                throw new ArgumentOutOfRangeException(nameof(score), "Score must be between 0 and 100.");
+
+            var raw = (score / 100.0) * 5.0;
+            return Math.Round(raw * 2, MidpointRounding.AwayFromZero) / 2.0;
         }
     }
 }
