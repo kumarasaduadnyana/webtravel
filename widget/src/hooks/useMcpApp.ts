@@ -119,6 +119,7 @@ function parseResult(result: unknown): unknown | null {
 }
 
 export interface McpAppState {
+  app: App | null
   hotels: Hotel[]
   meta: SearchHotelResponse['meta'] | null
   subtitle: string
@@ -151,11 +152,11 @@ export function useMcpApp(): McpAppState {
     }
   }, [])
 
-  const { isConnected, error } = useApp({
+  const { app, isConnected, error } = useApp({
     appInfo: { name: 'Travlr Booking Assistant', version: '1.0.0' },
     capabilities: {},
     onAppCreated,
   })
 
-  return { hotels, meta, subtitle, loading, isConnected, error }
+  return { app, hotels, meta, subtitle, loading, isConnected, error }
 }
