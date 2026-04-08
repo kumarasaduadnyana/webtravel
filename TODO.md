@@ -10,148 +10,167 @@
 ## How React + Tailwind fits into ChatGPT Apps
 
 ChatGPT renders your widget from a **single HTML file** served via MCP resource.
-The trick: Vite builds your React app → `vite-plugin-singlefile` inlines all JS/CSS into one `index.html` → .NET reads that file and serves it as `ui://widgets/list-hotel.html`.
+The trick: Vite builds your React app → `vite-plugin-singlefile` inlines all JS/CSS into one `list-hotel.html` → .NET reads that file and serves it as `ui://widgets/list-hotel.html`.
 
 ```
-widget/src/  →  vite build  →  dist/index.html  →  copied to TravelAgent/Widgets/list-hotel.html
+widget/src/  →  vite build  →  TravelAgent/Widgets/list-hotel.html
 ```
 
 ---
 
-## Phase 1 — Widget Project Setup
+## Phase 1 — Widget Project Setup ✅
 
 - [x] Create `widget/` folder at repo root
-- [x] Init Vite project: `npm create vite@latest . -- --template react-ts`
-- [x] Install dependencies:
-  ```bash
-  npm install
-  npm install -D tailwindcss@next @tailwindcss/vite
-  npm install leaflet react-leaflet
-  npm install -D @types/leaflet
-  npm install -D vite-plugin-singlefile
-  ```
-- [x] Configure Tailwind v4 in `vite.config.ts`:
-  ```ts
-  import tailwindcss from '@tailwindcss/vite'
-  import { viteSingleFile } from 'vite-plugin-singlefile'
-
-  export default defineConfig({
-    plugins: [react(), tailwindcss(), viteSingleFile()],
-    build: { outDir: '../TravelAgent/Widgets', rollupOptions: { input: 'index.html' } }
-  })
-  ```
-- [x] Add `@import "tailwindcss"` to `src/index.css`
-- [x] Add npm build script in `widget/package.json`:
-  ```json
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build --emptyOutDir false"
-  }
-  ```
+- [x] Init Vite + React + TypeScript project
+- [x] Install dependencies (Tailwind v4, react-leaflet, vite-plugin-singlefile, @modelcontextprotocol/ext-apps)
+- [x] Configure `vite.config.ts` — output to `TravelAgent/Widgets/list-hotel.html`
+- [x] Tailwind v4 setup with `@import "tailwindcss"` in `index.css`
 
 ---
 
-## Phase 2 — Read ChatGPT App Data
+## Phase 2 — MCP App Data Integration ✅
 
-ChatGPT injects tool result data into `window.__APP_DATA__` before rendering.
+> Replaced `window.__APP_DATA__` approach with official `@modelcontextprotocol/ext-apps` SDK.
 
-- [x] Create `src/types/hotel.ts` — TypeScript types matching `SearchHotelResponse` from the MCP tool:
+- [x] Create `src/types/hotel.ts` — TypeScript types matching `SearchHotelResponse`
+- [x] ~~`useAppData.ts`~~ → replaced by `useMcpApp.ts`
+- [x] `src/hooks/useMcpApp.ts` — connects via `useApp()`, listens to `ontoolresult`, parses `structuredContent` with text fallback (mirrors Alpine.js logic)
+- [x] Dev mock data pre-loaded when `import.meta.env.DEV` — no mock in production build
+- [x] `App.tsx` calls `useHostStyles(app)` to sync MCP host theme to document
+
+---
+
+## Phase 3 — Hotel List View (Card Carousel) ✅
+
+Design reference: `design-refs/hotel-card-design.png`
+
+![Hotel Card Design](design-refs/hotel-card-design.png)
+
+- [x] `src/components/HotelCard.tsx` — image, name, location, stars, guest rating, price, VIP price, CTA button
+- [x] `src/components/HotelCarousel.tsx` — horizontal snap scroll, prev/next arrows
+- [x] `ResizeObserver` on scroll container — cards fill available width with zero cut-off or partial cards
+- [x] Scroll step synced to dynamic card width
+- [x] Missing image fallback (🏨 emoji)
+- [x] Tailwind v4 utility classes throughout
+
+---
+
+## Phase 3b — Theming ✅
+
+- [x] CSS variable design token system (`--card`, `--primary`, `--muted`, `--border`, etc.)
+- [x] `@theme inline` block maps tokens to Tailwind utilities (`bg-card`, `text-foreground`, etc.)
+- [x] `@custom-variant dark ([data-theme="dark"] &)` — dark mode triggered by MCP SDK
+- [x] Dark mode fully wired: `useHostStyles` → `applyDocumentTheme("dark")` → CSS vars switch → Tailwind `dark:` classes activate
+- [x] Transparent outer background — widget blends with any host (ChatGPT, MCP Inspector)
+
+---
+
+## Phase 4 — Hotel Detail View
+
+> **Context**: The MCP server exposes `get_hotels_detail` tool (in `HotelAssistantTool.cs`) that returns
+> a rich `HotelDetail` object. When "View Details" is clicked, the widget calls this tool via
+> `app.callServerTool()` and the result renders in the same widget (in-widget navigation).
+
+Design reference: `design-refs/hotel-detail-design.png`
+
+![Hotel Detail Design](design-refs/hotel-detail-design.png)
+
+### How the detail flow works
+
+```
+User clicks "View Details" on a HotelCard
+    → HotelCard calls onViewDetails(hotel) passed as prop
+        → App.tsx calls app.callServerTool({ name: 'get_hotels_detail', arguments: { ... } })
+            → MCP server fetches room rates + full detail
+                → ontoolresult fires with HotelDetail data
+                    → App.tsx switches view to 'detail'
+                        → HotelDetailView renders
+```
+
+### Backend (small — coordinate with MCP developer)
+
+- [ ] Add `GetHotelDetailWidget()` to `TravelAgent/MCP/Resources/WidgetResource.cs`
+  - URI: `ui://hotel-detail-widget.html`
+  - Serves `TravelAgent/Widgets/hotel-detail-widget.html` (for when AI calls tool directly)
+
+### Frontend
+
+**4.1 — Types**
+- [ ] Add `HotelDetail` and `RoomRateInfo` to `src/types/hotel.ts`:
   ```ts
-  export interface Hotel {
+  export interface RoomRateInfo {
+    roomName: string
+    roomType: string
+    imageUrl?: string
+    bedConfiguration?: string
+    mealsDescription?: string
+    refundable: boolean
+    freeCancellationUntil?: string
+    price: number
+    strikeThroughPrice?: number
+    currency: string
+  }
+
+  export interface HotelDetail {
     id: string
     name: string
-    location: string
-    rating: number
     starRating: number
-    guestRating: number
-    guestRatingCount: number
-    price: number
-    currency: string
-    imageUrl: string
-    amenities: string[]
+    description?: string
     images: string[]
-    latitude?: number   // needed for map — backend must add these
+    amenities: string[]
+    address?: string
+    latitude?: number
     longitude?: number
-  }
-
-  export interface SearchHotelResponse {
-    hotels: Hotel[]
-    meta: {
-      destination: string
-      checkIn: string
-      checkOut: string
-      currency: string
-    }
+    currency: string
+    price: number
+    roomRates: RoomRateInfo[]
   }
   ```
-- [x] Create `src/hooks/useAppData.ts` to read `window.__APP_DATA__`:
-  ```ts
-  declare global {
-    interface Window { __APP_DATA__: SearchHotelResponse }
-  }
-  export const useAppData = () => window.__APP_DATA__ ?? null
-  ```
 
----
+**4.2 — State management in `useMcpApp`**
+- [ ] Extend `useMcpApp.ts` to:
+  - Store `detailData: HotelDetail | null` and `detailLoading: boolean` in state
+  - Detect result type: if result has `roomRates` → it's a `HotelDetail`, else it's `SearchHotelResponse`
+  - Keep existing `hotels` / `meta` state untouched when a detail result arrives
 
-## Phase 3 — Hotel List View (Card Carousel)
+**4.3 — Wire "View Details" button**
+- [ ] Update `HotelCard.tsx` — add `onViewDetails?: (hotel: Hotel) => void` prop
+- [ ] Update `HotelCarousel.tsx` — pass `onViewDetails` down to each card
+- [ ] Update `App.tsx`:
+  - Add `view: 'list' | 'detail'` state
+  - `handleViewDetails(hotel)`:
+    1. Set `detailLoading = true`, switch `view` to `'detail'`
+    2. Call `app.callServerTool({ name: 'get_hotels_detail', arguments: { hotel_id: hotel.id, hotel_code: hotel.hotelCode, provider: hotel.provider, check_in: meta.checkIn, check_out: meta.checkOut, currency: meta.currency } })`
+  - When `detailData` arrives from `useMcpApp`, clear `detailLoading`
+  - Back button resets `view` to `'list'`
 
-Port the existing `Templates/hotel-widget.html` carousel to React + Tailwind.
-
-- [x] Create `src/components/HotelCard.tsx` — single hotel card with image, name, price, rating stars
-- [x] Create `src/components/HotelCarousel.tsx` — horizontal scroll carousel with prev/next arrows and dot indicators
-- [x] Style with Tailwind v4 utility classes (replace existing hand-written CSS)
-- [x] Handle missing images gracefully (emoji fallback 🏨)
-
----
-
-## Phase 4 — Map View (Leaflet)
-
-- [ ] Create `src/components/HotelMap.tsx`:
-  - Full-height Leaflet map centered on destination
-  - One `<Marker>` per hotel with lat/lng
-  - `<Popup>` on each marker: hotel name, price/night, star rating, "View" link
-  - Cluster markers if hotels are close together (optional: `react-leaflet-cluster`)
-- [ ] Import Leaflet CSS in `src/index.css`:
-  ```css
-  @import 'leaflet/dist/leaflet.css';
-  ```
-- [ ] Fix Leaflet default icon path issue (common Vite/webpack problem):
-  ```ts
-  import L from 'leaflet'
-  import markerIcon from 'leaflet/dist/images/marker-icon.png'
-  import markerShadow from 'leaflet/dist/images/marker-shadow.png'
-  delete (L.Icon.Default.prototype as any)._getIconUrl
-  L.Icon.Default.mergeOptions({ iconUrl: markerIcon, shadowUrl: markerShadow })
-  ```
-- [ ] Add custom pin color/style for selected hotel (highlight on hover from card)
+**4.4 — `HotelDetailView` component**
+- [ ] Create `src/components/HotelDetailView.tsx`:
+  - **Header**: back button (`‹ Back to results`), hotel name, star rating
+  - **Image gallery**: horizontal scroll strip of all `images[]`
+  - **Info row**: address, guest rating badge
+  - **Description**: expandable text block
+  - **Amenities**: wrapping pill/badge grid
+  - **Room rates**: card list — each room shows name, bed config, meals, price, cancellation policy, "Book Now" CTA
+  - **Loading skeleton**: shown while `detailLoading` is true
 
 ---
 
 ## Phase 5 — List / Map Toggle
 
-- [ ] Create `src/components/ViewToggle.tsx` — "List" / "Map" tab buttons (styled with Tailwind)
-- [ ] Wire toggle state in `src/App.tsx`:
-  ```tsx
-  const [view, setView] = useState<'list' | 'map'>('list')
-  return (
-    <>
-      <ViewToggle value={view} onChange={setView} />
-      {view === 'list' ? <HotelCarousel hotels={hotels} /> : <HotelMap hotels={hotels} />}
-    </>
-  )
-  ```
-- [ ] Sync selection: clicking a card in list highlights its pin on map (optional for hackathon)
+- [ ] Create `src/components/ViewToggle.tsx` — "List" / "Map" tab buttons
+- [ ] Wire toggle state in `src/App.tsx`
+- [ ] Sync: clicking a card highlights its pin on map (optional)
 
 ---
 
 ## Phase 6 — Backend: Add Coordinates to Hotel Model
 
-> This is backend work — coordinate with the MCP server developer.
+> Backend work — coordinate with MCP server developer.
 
-- [ ] Add `Latitude` and `Longitude` to `TravelAgent/Models/Hotel.cs`
+- [x] `HotelDetail` already has `Latitude` and `Longitude` (available in detail view)
+- [ ] Add `Latitude` and `Longitude` to `TravelAgent/Models/Hotel.cs` (for list view map pins)
 - [ ] Populate from search API response in `TravelAgent/Services/HotelService.cs`
-- [ ] If API doesn't return coordinates: add a geocoding fallback (e.g. call Nominatim/OpenStreetMap with hotel name + location string)
 
 ---
 
@@ -163,18 +182,15 @@ Port the existing `Templates/hotel-widget.html` carousel to React + Tailwind.
     <Exec Command="npm run build" WorkingDirectory="$(MSBuildProjectDirectory)/../widget" />
   </Target>
   ```
-- [ ] Verify `Widgets/list-hotel.html` is auto-copied to output dir (already configured in `.csproj`)
-- [ ] Test end-to-end: prompt ChatGPT → tool called → widget renders with map toggle
+- [ ] Test end-to-end: ChatGPT prompt → tool called → widget renders with map toggle
 
 ---
 
 ## Phase 8 — Polish (time permitting)
 
-- [ ] Loading skeleton while data renders
-- [ ] "No results" empty state
-- [ ] Responsive layout (mobile-friendly within ChatGPT panel)
-- [ ] Dark mode support (ChatGPT has dark mode)
+- [ ] Loading skeleton while waiting for tool result
 - [ ] Animated map pin bounce on first load
+- [ ] Cross-highlight: hover card ↔ highlight map pin
 
 ---
 
@@ -182,14 +198,20 @@ Port the existing `Templates/hotel-widget.html` carousel to React + Tailwind.
 
 | File | Purpose |
 |------|---------|
-| `widget/src/App.tsx` | Root component, view toggle logic |
-| `widget/src/types/hotel.ts` | TypeScript types for MCP tool response |
-| `widget/src/components/HotelCard.tsx` | Single hotel card |
-| `widget/src/components/HotelCarousel.tsx` | Horizontal scrolling list |
-| `widget/src/components/HotelMap.tsx` | Leaflet map with pins |
-| `widget/src/components/ViewToggle.tsx` | List/Map tab switch |
+| `widget/src/App.tsx` | Root — view state, `handleViewDetails`, `useMcpApp`, `useHostStyles` |
+| `widget/src/types/hotel.ts` | TypeScript types — `Hotel`, `HotelDetail`, `RoomRateInfo`, `SearchHotelResponse` |
+| `widget/src/hooks/useMcpApp.ts` | MCP ext-apps connection + tool result parsing (list + detail) |
+| `widget/src/index.css` | Tailwind v4 + CSS design tokens + dark variant |
+| `widget/src/components/HotelCard.tsx` | Single hotel card — emits `onViewDetails` |
+| `widget/src/components/HotelCarousel.tsx` | Responsive carousel with ResizeObserver |
+| `widget/src/components/HotelDetailView.tsx` | _(next)_ Full detail page |
+| `widget/src/components/HotelMap.tsx` | _(next)_ Leaflet map with pins |
+| `widget/src/components/ViewToggle.tsx` | _(next)_ List/Map tab switch |
 | `widget/vite.config.ts` | Vite + singlefile + Tailwind v4 config |
-| `TravelAgent/Widgets/list-hotel.html` | Build output (served by MCP resource) |
-| `TravelAgent/MCP/Resources/WidgetResource.cs` | MCP resource serving the HTML |
-| `TravelAgent/MCP/Tools/HotelAssistantTool.cs` | MCP tool with `ui` annotation |
-| `TravelAgent/Models/Hotel.cs` | Add Latitude/Longitude here |
+| `TravelAgent/Widgets/list-hotel.html` | Build output served by MCP resource |
+| `TravelAgent/MCP/Resources/WidgetResource.cs` | MCP resources — add detail widget here |
+| `TravelAgent/MCP/Tools/HotelAssistantTool.cs` | `search_hotel` + `get_hotels_detail` tools |
+| `TravelAgent/Models/HotelDetail.cs` | `HotelDetail` + `RoomRateInfo` model |
+| `TravelAgent/Models/Hotel.cs` | Add `Latitude`/`Longitude` here (Phase 6) |
+| `design-refs/hotel-detail-design.png` | Detail view design reference |
+| `design-refs/hotel-card-design.png` | Card design reference |

@@ -67,6 +67,7 @@ builder.Services.AddScoped<IAccommodationApiClient>(sp =>
                   ?? "https://webapi-accommodation.odin.travlr.com";
     return new AccommodationApiClient(baseUrl, http);
 });
+builder.Services.AddHttpClient("Widget");
 builder.Services.AddScoped<IHotelService, HotelService>();
 
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
