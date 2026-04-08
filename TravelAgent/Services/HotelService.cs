@@ -26,13 +26,16 @@ namespace TravelAgent.Services
             DateTime checkIn,
             DateTime checkOut,
             int adults,
+            int children,
             int rooms,
             string currency,
             string? sortBy = null,
             List<int>? starRatings = null,
+            double? minPrice = null,
             double? maxPrice = null,
             int? minRating = null,
-            List<string>? amenities = null)
+            List<string>? amenities = null,
+            int pageSize = 40)
         {
             string destinationFullName = destination;
             
@@ -67,7 +70,7 @@ namespace TravelAgent.Services
 
             // Build filters for the API; sort is applied client-side only
             // (API sort field names are not guaranteed, so we don't pass them to avoid search failures)
-            var apiFilter = BuildFilters(starRatings, maxPrice, amenities);
+            var apiFilter = BuildFilters(starRatings, minPrice, maxPrice, amenities);
 
             try
             {
@@ -77,7 +80,7 @@ namespace TravelAgent.Services
                 var searchResponse = await _searchClient.AccommodationSearchByDestinationAsync(
                     new AccommodationSearchByDestinationRequestViewModel
                     {
-                        Page = new SearchRequestViewModel_Page { Size = 40, Current = 1 },
+                        Page = new SearchRequestViewModel_Page { Size = pageSize, Current = 1 },
                         DestinationFullName = destinationFullName,
                         SessionId = Guid.NewGuid().ToString("N")[..20],
                         GetComparisonPrice = true,
@@ -99,18 +102,13 @@ namespace TravelAgent.Services
                             GuestsCount = new AccommodationSearchByDestinationRequestViewModel_GuestsCount
                             {
                                 Adult = adults,
-                                Child = 0,
+                                Child = children,
                                 Infant = 0,
                                 ChildrenAges = new List<int>()
                             }
                         }
                     });
-
-                _logger.LogInformation("Hotel search returned {Count} results", searchResponse?.Result?.Count ?? 0);
-                var first = searchResponse?.Result?.FirstOrDefault();
-                _logger.LogInformation("Sample images for '{Name}': [{Images}]",
-                    first?.Name,
-                    string.Join(", ", first?.Images ?? Enumerable.Empty<string>()));
+                
                 return ApplyClientSort(MapResults(searchResponse, destinationFullName, currency), sortBy, minRating);
             }
             catch (TravlrSearchApiClientException ex)
@@ -154,12 +152,12 @@ namespace TravelAgent.Services
 
         private static (ICollection<int>? starRatings, ICollection<string>? amenities,
             AccommodationSearchByDestinationRequestViewModel_PriceRange? priceRange)
-            BuildFilters(List<int>? starRatings, double? maxPrice, List<string>? amenities)
+            BuildFilters(List<int>? starRatings, double? minPrice, double? maxPrice, List<string>? amenities)
         {
             ICollection<int>? stars = starRatings?.Count > 0 ? starRatings : null;
             ICollection<string>? amen = amenities?.Count > 0 ? amenities : null;
             AccommodationSearchByDestinationRequestViewModel_PriceRange? price = maxPrice.HasValue
-                ? new AccommodationSearchByDestinationRequestViewModel_PriceRange { ToPriceAUD = maxPrice }
+                ? new AccommodationSearchByDestinationRequestViewModel_PriceRange { FromPriceAUD = minPrice, ToPriceAUD = maxPrice }
                 : null;
             return (stars, amen, price);
         }
@@ -331,8 +329,8 @@ namespace TravelAgent.Services
                 Name = doc.Name,
                 Location = doc.DestinationDetails?.DisplayName ?? doc.DestinationDetails?.City ?? fallbackLocation,
                 Rating = doc.StarRating ?? ConvertToStarRating(doc.GuestRating ?? 0),
-                StarRating = doc.StarRating,
-                GuestRating = doc.GuestRating,
+                StarRating = doc.StarRating.HasValue ? Math.Round(doc.StarRating.Value, 0) : null,
+                GuestRating = doc.GuestRating.HasValue ? Math.Round(doc.GuestRating.Value, 0) : null,
                 GuestRatingCount = doc.GuestRatingCount,
                 Price = doc.CurrentCheapestPrice ?? doc.ReferencePrice ?? 0,
                 SupplierPrice = doc.CurrentCheapestSupplierPrice,

@@ -20,4 +20,19 @@ public class WidgetResource(IConfiguration configuration, IHttpClientFactory htt
             Text = content
         };
     }
+
+    [McpServerResource(UriTemplate = "ui://widgets/list-vehicle.html")]
+    public async Task<ResourceContents> GetCarRentalListWidget()
+    {
+        var widgetUrl = configuration["WidgetUrl"]!.TrimEnd('/');
+        var http = httpClientFactory.CreateClient("Widget");
+        var content = await http.GetStringAsync($"{widgetUrl}/list-vehicle.html");
+
+        return new TextResourceContents
+        {
+            Uri = "ui://widgets/list-vehicle.html",
+            MimeType = "text/html;profile=mcp-app",
+            Text = content
+        };
+    }
 }
