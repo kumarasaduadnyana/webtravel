@@ -21,7 +21,7 @@ public class HotelAssistantTool(IHotelService hotelService)
         [Description("Number of rooms")] int rooms = 1,
         [Description("Destination city or region")] string destination = "BALI",
         [Description("Currency code (e.g. USD, EUR, AUD)")] string currency = "AUD",
-        [Description("Number of hotels to show the user. Use when user says 'show me 3', 'top 5', 'only 10', etc. Min 1, max 40, default 40")] int count = 0,
+        [Description("Number of hotels to show the user. Use when user says 'show me 3', 'top 5', 'only 10', etc. Min 1, max 40, default 40")] int count = 40,
         [Description("Sort order: 'price_asc' (cheapest first), 'price_desc' (most expensive first), 'rating_desc' (best rated first)")] string? sortBy = null,
         [Description("List of star ratings (1 to 5) to filter by")] List<int>? ratings = null,
         [Description("Minimum price per night")] double? minPrice = null,
