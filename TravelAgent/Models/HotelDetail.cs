@@ -14,6 +14,7 @@ namespace TravelAgent.Models
         public string? Currency { get; set; }
         public double? Price { get; set; }
         public List<RoomRateInfo>? RoomRates { get; set; }
+        public string Instruction { get; set; }
     }
 
     public class RoomRateInfo
@@ -25,7 +26,7 @@ namespace TravelAgent.Models
         public string? MealsDescription { get; set; }
         public bool Refundable { get; set; }
         public DateTime? FreeCancellationUntil { get; set; }
-        public double Price { get; set; }
+        public double? Price { get; set; }
         public double? StrikeThroughPrice { get; set; }
         public string? Currency { get; set; }
     }

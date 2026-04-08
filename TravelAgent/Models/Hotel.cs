@@ -1,3 +1,5 @@
+using Travlr.Search.Client;
+
 namespace TravelAgent.Models
 {
     public class Hotel
@@ -18,5 +20,18 @@ namespace TravelAgent.Models
         public List<string>? Images { get; set; }
         public string? HotelCode { get; set; }
         public string? Provider { get; set; }
+        public DestinationDetails DestinationDetail { get; set; }
     }
+
+    //public class DestinationDetails
+    //{
+    //    public string? City { get; set; }
+    //    public Coordinate? Coordinate { get; set; }
+    //}
+
+    //public class Coordinate
+    //{
+    //    public string? Latitude { get; set; }
+    //    public string? Longitude { get; set; }
+    //}
 }

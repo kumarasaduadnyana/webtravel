@@ -170,7 +170,7 @@ namespace TravelAgent.Services
 
             return sortBy switch
             {
-                "cheapest"       => hotels.OrderBy(h => h.Price ?? double.MaxValue).ToList(),
+                "price_asc"       => hotels.OrderBy(h => h.Price ?? double.MaxValue).ToList(),
                 "most_expensive" => hotels.OrderByDescending(h => h.Price ?? 0).ToList(),
                 "best_rated"     => hotels.OrderByDescending(h => h.GuestRating ?? 0).ToList(),
                 "top_stars"      => hotels.OrderByDescending(h => h.StarRating ?? 0).ToList(),
@@ -293,9 +293,9 @@ namespace TravelAgent.Services
                     MealsDescription = mealDesc,
                     Refundable = r.Refundable,
                     FreeCancellationUntil = r.FreeCancellation?.IsFree == true ? r.FreeCancellation.EndDate : null,
-                    Price = r.SellPrice,
-                    StrikeThroughPrice = r.StrikeThroughTotalAfterTax,
-                    Currency = r.CustomerCurrencyCode ?? currency
+                    Price = r?.CustomerTotalAfterTax,
+                    StrikeThroughPrice = r?.StrikeThroughTotalAfterTax,
+                    Currency = r?.CustomerCurrencyCode ?? currency
                 };
             }).ToList() ?? new List<RoomRateInfo>();
 
@@ -321,27 +321,40 @@ namespace TravelAgent.Services
             string fallbackLocation,
             string fallbackCurrency)
         {
+            var hotelResult = new List<Hotel>();
             if (response?.Result == null) return new List<Hotel>();
 
-            return response.Result.Select(doc => new Hotel
+            foreach (var item in response.Result)
             {
-                Id = doc.Id,
-                Name = doc.Name,
-                Location = doc.DestinationDetails?.DisplayName ?? doc.DestinationDetails?.City ?? fallbackLocation,
-                Rating = doc.StarRating ?? ConvertToStarRating(doc.GuestRating ?? 0),
-                StarRating = doc.StarRating.HasValue ? Math.Round(doc.StarRating.Value, 0) : null,
-                GuestRating = doc.GuestRating.HasValue ? Math.Round(doc.GuestRating.Value, 0) : null,
-                GuestRatingCount = doc.GuestRatingCount,
-                Price = doc.CurrentCheapestPrice ?? doc.ReferencePrice ?? 0,
-                SupplierPrice = doc.CurrentCheapestSupplierPrice,
-                StrikeThroughPrice = doc.CurrentStrikeThroughPrice,
-                Currency = doc.Currency ?? fallbackCurrency,
-                ImageUrl = doc.Images?.FirstOrDefault(),
-                Amenities = doc.HotelAmenities?.ToList(),
-                Images = doc.Images?.ToList(),
-                HotelCode = doc.AvailabilityPropertyId,
-                Provider = doc.AvailabilityProvider?.ToString()
-            }).ToList();
+                if ((item.CurrentCheapestPrice == null && item.ReferencePrice == 0) 
+                    && !item.HasRoomAvailability)
+                {
+                    continue;
+                }
+
+                hotelResult.Add(new Hotel
+                {
+                    Id = item.Id,
+                    Name = item.Name,
+                    Location = item.DestinationDetails?.DisplayName ?? item.DestinationDetails?.City ?? fallbackLocation,
+                    Rating = item.StarRating ?? ConvertToStarRating(item.GuestRating ?? 0),
+                    StarRating = item.StarRating.HasValue ? Math.Round(item.StarRating.Value, 0) : null,
+                    GuestRating = item.GuestRating.HasValue ? Math.Round(item.GuestRating.Value, 0) : null,
+                    GuestRatingCount = item.GuestRatingCount,
+                    Price = item.CurrentCheapestPrice ?? item.ReferencePrice ?? 0,
+                    SupplierPrice = item.CurrentCheapestSupplierPrice,
+                    StrikeThroughPrice = item.CurrentStrikeThroughPrice,
+                    Currency = item.Currency ?? fallbackCurrency,
+                    ImageUrl = item.Images?.FirstOrDefault(),
+                    Amenities = item.HotelAmenities?.ToList(),
+                    Images = item.Images?.ToList(),
+                    HotelCode = item.AvailabilityPropertyId,
+                    Provider = item.AvailabilityProvider?.ToString(),
+                    DestinationDetail = item?.DestinationDetails ?? new DestinationDetails()
+                });
+            }
+
+            return hotelResult;
         }
 
         public static double ConvertToStarRating(double score)
