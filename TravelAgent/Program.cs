@@ -1,12 +1,16 @@
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.Extensions.Options;
 using ModelContextProtocol.Protocol;
+using TravelAgent.Options;
 using Travlr.Search.Client;
 using Travlr.Accommodations.Application.Clients.AccommodationApi;
 using TravelAgent.Services;
+using TravelAgent.Services.CarRental.CarRentalClient;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+var configuration = builder.Configuration;
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -70,6 +74,28 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
     options.ForwardedHeaders =
         ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
 });
+
+#region CarRental
+builder.Services.Configure<CarRentalOption>(configuration.GetSection("CarRental"));
+
+// Register HttpClient for Car Rental
+builder.Services.AddHttpClient("CarRentalClient", (sp, client) =>
+{
+    var options = sp.GetRequiredService<IOptions<CarRentalOption>>().Value;
+    client.BaseAddress = new Uri(options.Endpoint);
+});
+
+// Register the CarRental Client
+builder.Services.AddScoped<TravelAgent.Services.CarRental.CarRentalClient.Client>(sp => 
+{
+    var factory = sp.GetRequiredService<IHttpClientFactory>();
+    var httpClient = factory.CreateClient("CarRentalClient");
+    var options = sp.GetRequiredService<IOptions<CarRentalOption>>().Value;
+    
+    return new Client(options.Endpoint, httpClient);
+});
+
+#endregion
 
 builder.Services.AddCors(options =>
 {

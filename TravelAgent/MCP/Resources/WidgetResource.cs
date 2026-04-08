@@ -10,13 +10,6 @@ public class WidgetResource
     public async Task<ResourceContents> GetHotelListWidget()
     {
         var filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Widgets", $"list-hotel.html");
-            
-        // If running in development/local, we might need to look at the project folder
-        /*if (!File.Exists(filePath))
-        {
-            // Try looking in the source folder if base directory doesn't have it (for local dev)
-            filePath = Path.Combine(Directory.GetCurrentDirectory(), "src", "Travlr.AI.Application", "UI", $"list-hotel.html");
-        }*/
 
         if (!File.Exists(filePath))
         {
@@ -32,4 +25,25 @@ public class WidgetResource
             Text = content
         };
     }
+    
+    [McpServerResource(UriTemplate = "ui://widgets/list-vehicle.html")]
+    public async Task<ResourceContents> GetCarRentalListWidget()
+    {
+        var filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Widgets", $"list-vehicle.html");
+
+        if (!File.Exists(filePath))
+        {
+            throw new FileNotFoundException($"UI template list-hotel.html not found.");
+        }
+
+        var content = await File.ReadAllTextAsync(filePath);
+
+        return new TextResourceContents
+        {
+            Uri = $"ui://widgets/list-vehicle.html",
+            MimeType = "text/html;profile=mcp-app",
+            Text = content
+        };
+    }
+    
 }
